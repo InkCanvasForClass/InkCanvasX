@@ -9,8 +9,6 @@
   <component name="ChangeListManager">
     <list default="true" id="aa8a1b81-0404-4f78-8eb3-ed5ac66a8707" name="更改" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.SkiaAnnotate/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.SkiaAnnotate/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net9.0-windows/SkiaAnnotate.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net9.0-windows/SkiaAnnotate.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net9.0-windows/SkiaAnnotate.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net9.0-windows/SkiaAnnotate.AssemblyInfoInputs.cache" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -112,6 +110,7 @@
       <workItem from="1754367324881" duration="527000" />
       <workItem from="1754367871600" duration="41000" />
       <workItem from="1754368016341" duration="689000" />
+      <workItem from="1754371188100" duration="1199000" />
     </task>
     <task id="LOCAL-00001" summary="基础设施">
       <option name="closed" value="true" />
@@ -121,7 +120,15 @@
       <option name="project" value="LOCAL" />
       <updated>1753973022950</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="基础设施">
+      <option name="closed" value="true" />
+      <created>1754371445496</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1754371445496</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
