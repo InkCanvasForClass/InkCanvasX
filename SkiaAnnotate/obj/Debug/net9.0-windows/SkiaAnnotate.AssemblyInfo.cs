@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SkiaAnnotate")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+092679798c7262e1d3caffb84893b64eb545ba59")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cc2ca739daefd19e6967a6e0842e2a1393a9c301")]
 [assembly: System.Reflection.AssemblyProductAttribute("SkiaAnnotate")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SkiaAnnotate")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

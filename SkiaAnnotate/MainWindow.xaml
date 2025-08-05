@@ -33,61 +33,9 @@
     <!-- 主栏 -->
     <Grid>
         <Border BorderBrush="#D0D0D0" BorderThickness="1.5" CornerRadius="18" Background="White" Margin="20" Effect="{DynamicResource MaterialDesignElevation2}">
-            <Grid Margin="30,0" VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <!-- 鼠标 -->
-                <Button Grid.Column="0" Margin="8,18" Padding="0" Background="#F3F3F3" BorderBrush="#B0B0B0" BorderThickness="1" Style="{StaticResource MaterialDesignFlatButton}" Click="MouseButton_Click">
-                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                        <materialDesign:PackIcon Kind="CursorDefaultOutline" Width="28" Height="28" Foreground="#222"/>
-                        <TextBlock Text="鼠标" FontSize="14" Foreground="#222"/>
-                    </StackPanel>
-                </Button>
-                <!-- 批注 -->
-                <Button Grid.Column="1" Margin="8,18" Padding="0" Background="#F3F3F3" BorderBrush="#B0B0B0" BorderThickness="1" Style="{StaticResource MaterialDesignFlatButton}" Click="PenButton_Click">
-                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                        <materialDesign:PackIcon Kind="Pencil" Width="28" Height="28" Foreground="#222"/>
-                        <TextBlock Text="批注" FontSize="14" Foreground="#222"/>
-                    </StackPanel>
-                </Button>
-                <!-- 清空 -->
-                <Button Grid.Column="2" Margin="8,18" Padding="0" Background="#F3F3F3" BorderBrush="#B0B0B0" BorderThickness="1" Style="{StaticResource MaterialDesignFlatButton}" Click="ClearButton_Click">
-                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                        <materialDesign:PackIcon Kind="Delete" Width="28" Height="28" Foreground="#E53935"/>
-                        <TextBlock Text="清空" FontSize="14" Foreground="#E53935"/>
-                    </StackPanel>
-                </Button>
-                <!-- 分隔符 -->
-                <Border Grid.Column="3" Width="1.5" Background="#B0B0B0" Margin="0,10" CornerRadius="1"/>
-                <!-- 白板 -->
-                <Button Grid.Column="4" Margin="8,18" Padding="0" Background="#F3F3F3" BorderBrush="#B0B0B0" BorderThickness="1" Style="{StaticResource MaterialDesignFlatButton}" Click="WhiteboardButton_Click">
-                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                        <materialDesign:PackIcon Kind="Whiteboard" Width="28" Height="28" Foreground="#222"/>
-                        <TextBlock Text="白板" FontSize="14" Foreground="#222"/>
-                    </StackPanel>
-                </Button>
-                <!-- 工具 -->
-                <Button Grid.Column="5" Margin="8,18" Padding="0" Background="#F3F3F3" BorderBrush="#B0B0B0" BorderThickness="1" Style="{StaticResource MaterialDesignFlatButton}" Click="ToolsButton_Click">
-                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                        <materialDesign:PackIcon Kind="Apps" Width="28" Height="28" Foreground="#222"/>
-                        <TextBlock Text="工具" FontSize="14" Foreground="#222"/>
-                    </StackPanel>
-                </Button>
-                <!-- 隐藏 -->
-                <Button Grid.Column="6" Margin="8,18" Padding="0" Background="#F3F3F3" BorderBrush="#B0B0B0" BorderThickness="1" Style="{StaticResource MaterialDesignFlatButton}" Click="HideButton_Click">
-                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                        <materialDesign:PackIcon Kind="EyeOffOutline" Width="28" Height="28" Foreground="#222"/>
-                        <TextBlock Text="隐藏" FontSize="14" Foreground="#222"/>
-                    </StackPanel>
-                </Button>
-            </Grid>
+           <Grid>
+               
+           </Grid>    
         </Border>
     </Grid>
 </Window>
