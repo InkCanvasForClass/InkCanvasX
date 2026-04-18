@@ -43,16 +43,58 @@
             </Setter>
         </Style>
 
-        <Style x:Key="PrimaryToolbarButtonStyle" TargetType="Button" BasedOn="{StaticResource ToolbarButtonStyle}">
+        <Style x:Key="IconToolbarButtonStyle" TargetType="Button" BasedOn="{StaticResource ToolbarButtonStyle}">
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="MinWidth" Value="34" />
+        </Style>
+
+        <Style x:Key="PrimaryToolbarButtonStyle" TargetType="Button" BasedOn="{StaticResource IconToolbarButtonStyle}">
             <Setter Property="Foreground" Value="White" />
             <Setter Property="Background" Value="#3A7AFE" />
             <Setter Property="BorderBrush" Value="#2D67D7" />
         </Style>
 
-        <Style x:Key="DangerToolbarButtonStyle" TargetType="Button" BasedOn="{StaticResource ToolbarButtonStyle}">
+        <Style x:Key="DangerToolbarButtonStyle" TargetType="Button" BasedOn="{StaticResource IconToolbarButtonStyle}">
             <Setter Property="Foreground" Value="White" />
             <Setter Property="Background" Value="#E65245" />
             <Setter Property="BorderBrush" Value="#C73D32" />
+        </Style>
+
+        <Style x:Key="CollapsedArrowStyle" TargetType="Button">
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="#4A5056" />
+            <Setter Property="BorderBrush" Value="#707880" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="14">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#5A626A" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#41484F" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
@@ -86,18 +128,25 @@
                     </Border>
 
                     <StackPanel x:Name="ToolbarButtonPanel" Orientation="Horizontal" Margin="6,5">
-                        <Button Style="{StaticResource ToolbarButtonStyle}" Content="上一页" Click="PreviousSlide_OnClick" />
-                        <Button Style="{StaticResource ToolbarButtonStyle}" Content="下一页" Click="NextSlide_OnClick" />
+                        <Button Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE100;" Click="PreviousSlide_OnClick" ToolTip="上一页" />
+                        <Button Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE101;" Click="NextSlide_OnClick" ToolTip="下一页" />
                         <Border Width="1" Height="20" Margin="4,0" Background="#CFCFCF" VerticalAlignment="Center" />
-                        <Button Style="{StaticResource PrimaryToolbarButtonStyle}" Content="画笔" Click="Pen_OnClick" />
-                        <Button Style="{StaticResource ToolbarButtonStyle}" Content="橡皮" Click="Eraser_OnClick" />
-                        <Button Style="{StaticResource ToolbarButtonStyle}" Content="清屏" Click="Clear_OnClick" />
+                        <Button x:Name="PenButton" Style="{StaticResource IconToolbarButtonStyle}" Content="&#xED5F;" Click="Pen_OnClick" ToolTip="画笔" />
+                        <Button x:Name="EraserButton" Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE75C;" Click="Eraser_OnClick" ToolTip="橡皮" />
+                        <Button Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE74D;" Click="Clear_OnClick" ToolTip="清空当前页" />
                         <Border Width="1" Height="20" Margin="4,0" Background="#CFCFCF" VerticalAlignment="Center" />
-                        <Button x:Name="ToggleButton" Style="{StaticResource ToolbarButtonStyle}" Content="收起" Click="ToggleToolbar_OnClick" />
-                        <Button Style="{StaticResource DangerToolbarButtonStyle}" Content="退出" Click="Exit_OnClick" />
+                        <Button x:Name="ToggleButton" Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE76C;" Click="ToggleToolbar_OnClick" ToolTip="收起或展开" />
+                        <Button Style="{StaticResource DangerToolbarButtonStyle}" Content="&#xE8BB;" Click="Exit_OnClick" ToolTip="退出放映" />
                     </StackPanel>
                 </DockPanel>
             </Border>
+
+            <Button x:Name="CollapsedExpandButton"
+                    Style="{StaticResource CollapsedArrowStyle}"
+                    Content="&#xE76B;"
+                    Visibility="Collapsed"
+                    Click="CollapsedExpandButton_OnClick"
+                    ToolTip="展开工具栏" />
         </Canvas>
     </Grid>
 </Window>

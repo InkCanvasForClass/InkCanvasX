@@ -20,6 +20,12 @@ public partial class AnnotationOverlayWindow : Window
     private double _dragStartTop;
     private const double ExpandedToolbarWidth = 620;
     private const double CollapsedToolbarWidth = 46;
+    private readonly Brush _activeButtonBackground = new SolidColorBrush(Color.FromRgb(58, 122, 254));
+    private readonly Brush _activeButtonBorder = new SolidColorBrush(Color.FromRgb(45, 103, 215));
+    private readonly Brush _activeButtonForeground = Brushes.White;
+    private readonly Brush _normalButtonBackground = new SolidColorBrush(Color.FromRgb(250, 250, 250));
+    private readonly Brush _normalButtonBorder = new SolidColorBrush(Color.FromRgb(213, 213, 213));
+    private readonly Brush _normalButtonForeground = new SolidColorBrush(Color.FromRgb(31, 31, 31));
 
     public AnnotationOverlayWindow()
     {
@@ -38,6 +44,7 @@ public partial class AnnotationOverlayWindow : Window
         Loaded += (_, _) =>
         {
             PlaceToolbarTopCenter();
+            SetActiveToolVisual(isPenActive: true);
             Activate();
             OverlayInkCanvas.Focus();
         };
@@ -63,12 +70,14 @@ public partial class AnnotationOverlayWindow : Window
     {
         OverlayInkCanvas.EditingMode = InkCanvasEditingMode.Ink;
         OverlayInkCanvas.EditingModeInverted = InkCanvasEditingMode.EraseByStroke;
+        SetActiveToolVisual(isPenActive: true);
         OverlayInkCanvas.Focus();
     }
 
     private void Eraser_OnClick(object sender, RoutedEventArgs e)
     {
         OverlayInkCanvas.EditingMode = InkCanvasEditingMode.EraseByStroke;
+        SetActiveToolVisual(isPenActive: false);
         OverlayInkCanvas.Focus();
     }
 
@@ -79,7 +88,25 @@ public partial class AnnotationOverlayWindow : Window
         _toolbarCollapsed = !_toolbarCollapsed;
         FloatingToolbar.Width = _toolbarCollapsed ? CollapsedToolbarWidth : ExpandedToolbarWidth;
         ToolbarButtonPanel.Visibility = _toolbarCollapsed ? Visibility.Collapsed : Visibility.Visible;
-        ToggleButton.Content = _toolbarCollapsed ? "展开" : "收起";
+        FloatingToolbar.Visibility = _toolbarCollapsed ? Visibility.Collapsed : Visibility.Visible;
+        CollapsedExpandButton.Visibility = _toolbarCollapsed ? Visibility.Visible : Visibility.Collapsed;
+        ToggleButton.Content = _toolbarCollapsed ? "\uE76B" : "\uE76C";
+        EnsureToolbarInsideBounds();
+    }
+
+    private void CollapsedExpandButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (!_toolbarCollapsed)
+        {
+            return;
+        }
+
+        _toolbarCollapsed = false;
+        FloatingToolbar.Width = ExpandedToolbarWidth;
+        FloatingToolbar.Visibility = Visibility.Visible;
+        ToolbarButtonPanel.Visibility = Visibility.Visible;
+        CollapsedExpandButton.Visibility = Visibility.Collapsed;
+        ToggleButton.Content = "\uE76C";
         EnsureToolbarInsideBounds();
     }
 
@@ -163,8 +190,10 @@ public partial class AnnotationOverlayWindow : Window
     private void PlaceToolbarTopCenter()
     {
         FloatingToolbar.Width = _toolbarCollapsed ? CollapsedToolbarWidth : ExpandedToolbarWidth;
+        FloatingToolbar.Visibility = _toolbarCollapsed ? Visibility.Collapsed : Visibility.Visible;
         ToolbarButtonPanel.Visibility = _toolbarCollapsed ? Visibility.Collapsed : Visibility.Visible;
-        ToggleButton.Content = _toolbarCollapsed ? "展开" : "收起";
+        CollapsedExpandButton.Visibility = _toolbarCollapsed ? Visibility.Visible : Visibility.Collapsed;
+        ToggleButton.Content = _toolbarCollapsed ? "\uE76B" : "\uE76C";
 
         if (_hasLastToolbarPosition)
         {
@@ -174,10 +203,14 @@ public partial class AnnotationOverlayWindow : Window
             return;
         }
 
-        // ICC-CE 风格：初始位置靠顶部、略偏右，减少遮挡课件标题区。
+        // ICC-CE 风格：初始靠近底部中间，避免遮挡页面主内容。
         var left = Math.Max(16, ActualWidth * 0.56 - FloatingToolbar.Width / 2);
+        var estimatedHeight = 42d;
+        var top = Math.Max(8, ActualHeight - estimatedHeight - 26);
         Canvas.SetLeft(FloatingToolbar, left);
-        Canvas.SetTop(FloatingToolbar, 14);
+        Canvas.SetTop(FloatingToolbar, top);
+        Canvas.SetLeft(CollapsedExpandButton, left + ExpandedToolbarWidth - 30);
+        Canvas.SetTop(CollapsedExpandButton, top + 6);
     }
 
     private void EnsureToolbarInsideBounds()
@@ -205,8 +238,37 @@ public partial class AnnotationOverlayWindow : Window
         top = Math.Clamp(top, 8, maxTop);
         Canvas.SetLeft(FloatingToolbar, left);
         Canvas.SetTop(FloatingToolbar, top);
+        Canvas.SetLeft(CollapsedExpandButton, left + Math.Max(0, FloatingToolbar.Width - 34));
+        Canvas.SetTop(CollapsedExpandButton, top + 4);
         _lastToolbarLeft = left;
         _lastToolbarTop = top;
         _hasLastToolbarPosition = true;
+    }
+
+    private void SetActiveToolVisual(bool isPenActive)
+    {
+        if (isPenActive)
+        {
+            ApplyButtonActive(PenButton);
+            ApplyButtonNormal(EraserButton);
+            return;
+        }
+
+        ApplyButtonNormal(PenButton);
+        ApplyButtonActive(EraserButton);
+    }
+
+    private void ApplyButtonActive(Button button)
+    {
+        button.Background = _activeButtonBackground;
+        button.BorderBrush = _activeButtonBorder;
+        button.Foreground = _activeButtonForeground;
+    }
+
+    private void ApplyButtonNormal(Button button)
+    {
+        button.Background = _normalButtonBackground;
+        button.BorderBrush = _normalButtonBorder;
+        button.Foreground = _normalButtonForeground;
     }
 }
