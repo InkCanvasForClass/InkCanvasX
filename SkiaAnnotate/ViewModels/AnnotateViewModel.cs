@@ -158,6 +158,7 @@ public sealed class AnnotateViewModel : INotifyPropertyChanged, IDisposable
         IsLinkModeEnabled = true;
         _linkMonitorTimer.Start();
         StatusMessage = "后台联动已启动，等待 PowerPoint 放映。";
+        AppLogger.Info("后台联动监听已开启。");
     }
 
     public void UpdateCurrentStrokes(StrokeCollection strokes)
@@ -171,7 +172,12 @@ public sealed class AnnotateViewModel : INotifyPropertyChanged, IDisposable
         _pageStrokes[CurrentSlideIndex] = CurrentStrokes.Clone();
     }
 
-    public void Dispose() => _pptInteropService.Dispose();
+    public void Dispose()
+    {
+        AppLogger.Info("释放 ViewModel 资源。");
+        _pptInteropService.Dispose();
+    }
+
     private void ConnectPowerPoint()
     {
         try
@@ -181,10 +187,12 @@ public sealed class AnnotateViewModel : INotifyPropertyChanged, IDisposable
             SlideCount = _pptInteropService.IsOpened ? _pptInteropService.GetSlideCount() : 0;
             CurrentSlideIndex = SlideCount > 0 ? 1 : 0;
             StatusMessage = "已连接 PowerPoint。放映开始时会自动显示批注画布。";
+            AppLogger.Info($"已连接 PowerPoint。SlideCount={SlideCount}");
         }
         catch (Exception ex)
         {
             StatusMessage = ex.Message;
+            AppLogger.Error("连接 PowerPoint 失败。", ex);
             MessageBox.Show(ex.Message, "连接失败", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
@@ -221,10 +229,12 @@ public sealed class AnnotateViewModel : INotifyPropertyChanged, IDisposable
             CurrentSlideIndex = SlideCount > 0 ? 1 : 0;
             CurrentSlideImage = null;
             StatusMessage = $"已加载：{dialog.FileName}";
+            AppLogger.Info($"打开演示文稿成功：{dialog.FileName}，SlideCount={SlideCount}");
         }
         catch (Exception ex)
         {
             StatusMessage = ex.Message;
+            AppLogger.Error($"打开演示文稿失败：{dialog.FileName}", ex);
             MessageBox.Show(ex.Message, "打开PPT失败", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
@@ -302,6 +312,7 @@ public sealed class AnnotateViewModel : INotifyPropertyChanged, IDisposable
             IsLinkModeEnabled = true;
             _linkMonitorTimer.Start();
             StatusMessage = "已开启联动监听。请在 PowerPoint 中开始放映。";
+            AppLogger.Info("手动开启联动监听。");
             return;
         }
 
@@ -309,6 +320,7 @@ public sealed class AnnotateViewModel : INotifyPropertyChanged, IDisposable
         _linkMonitorTimer.Stop();
         _presentationModeService.EnsureOverlayHidden();
         StatusMessage = "已停止联动监听。";
+        AppLogger.Info("手动停止联动监听。");
     }
 
     private void SetPenColor(Color color)
@@ -380,10 +392,12 @@ public sealed class AnnotateViewModel : INotifyPropertyChanged, IDisposable
         {
             _pptInteropService.ConnectToRunningPowerPoint();
             _pptInteropService.TryRefreshActivePresentation();
+            AppLogger.Info("静默重连 PowerPoint 成功。");
         }
-        catch
+        catch (Exception ex)
         {
             // 后台模式下静默重试，不打断用户的 PowerPoint 操作。
+            AppLogger.Warn($"静默重连 PowerPoint 失败：{ex.Message}");
         }
     }
 }
