@@ -1,8 +1,7 @@
 <Application x:Class="SkiaAnnotate.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="MainWindow.xaml">
+             ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
-        <!-- 可在此处添加全局资源 -->
     </Application.Resources>
 </Application>

@@ -22,22 +22,19 @@
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net9.0-windows"
+          "net6.0-windows"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net9.0-windows7.0": {
-            "targetAlias": "net9.0-windows",
+          "net6.0-windows7.0": {
+            "targetAlias": "net6.0-windows",
             "projectReferences": {}
           }
         },
         "warningProperties": {
-          "noWarn": [
-            "NU1701"
-          ],
           "warnAsError": [
             "NU1605"
           ]
@@ -50,28 +47,12 @@
         "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
-        "net9.0-windows7.0": {
-          "targetAlias": "net9.0-windows",
+        "net6.0-windows7.0": {
+          "targetAlias": "net6.0-windows",
           "dependencies": {
-            "MaterialDesignColors": {
+            "Microsoft.Office.Interop.PowerPoint": {
               "target": "Package",
-              "version": "[5.2.2-ci998, )"
-            },
-            "MaterialDesignThemes": {
-              "target": "Package",
-              "version": "[5.2.2-ci998, )"
-            },
-            "Microsoft.VisualBasic": {
-              "target": "Package",
-              "version": "[10.3.0, )"
-            },
-            "SkiaSharp": {
-              "target": "Package",
-              "version": "[3.119.0, )"
-            },
-            "SkiaSharp.Views.WPF": {
-              "target": "Package",
-              "version": "[3.119.0, )"
+              "version": "[15.0.4420.1018, )"
             }
           },
           "imports": [
@@ -85,15 +66,29 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[6.0.36, 6.0.36]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[6.0.36, 6.0.36]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[6.0.36, 6.0.36]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             },
-            "Microsoft.WindowsDesktop.App": {
+            "Microsoft.WindowsDesktop.App.WPF": {
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.311\\RuntimeIdentifierGraph.json"
         }
       }
     }

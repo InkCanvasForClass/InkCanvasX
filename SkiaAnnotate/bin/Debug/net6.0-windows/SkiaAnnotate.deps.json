@@ -1,0 +1,41 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "SkiaAnnotate/1.0.0": {
+        "dependencies": {
+          "Microsoft.Office.Interop.PowerPoint": "15.0.4420.1018"
+        },
+        "runtime": {
+          "SkiaAnnotate.dll": {}
+        }
+      },
+      "Microsoft.Office.Interop.PowerPoint/15.0.4420.1018": {
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Office.Interop.PowerPoint.dll": {
+            "assemblyVersion": "15.0.0.0",
+            "fileVersion": "15.0.4420.1017"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "SkiaAnnotate/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Office.Interop.PowerPoint/15.0.4420.1018": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3XkJAqbYq93MqqSOPusNE+6Tve5yBkbE92n9W8f+k8Z9AzXeoTMqMYqhZMrzVOp4saHhMMbOD78JkCjvk+qIzw==",
+      "path": "microsoft.office.interop.powerpoint/15.0.4420.1018",
+      "hashPath": "microsoft.office.interop.powerpoint.15.0.4420.1018.nupkg.sha512"
+    }
+  }
+}
