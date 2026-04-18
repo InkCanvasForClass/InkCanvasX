@@ -37,8 +37,6 @@ public sealed class SkiaInkCanvas : SKElement
 {
     private List<SkiaStroke> _strokes = new();
     private readonly Dictionary<int, ActiveStroke> _activeStrokes = new();
-    private readonly DispatcherTimer _renderPump;
-    private bool _renderPending;
     private SKPicture? _committedLayerPicture;
     private bool _committedLayerDirty = true;
     private bool _sawPressureVariation;
@@ -95,18 +93,6 @@ public sealed class SkiaInkCanvas : SKElement
             _paintStroke.Dispose();
             _paintVar.Dispose();
         };
-
-        _renderPump = new DispatcherTimer(DispatcherPriority.Render)
-        {
-            Interval = TimeSpan.FromMilliseconds(16)
-        };
-        _renderPump.Tick += (_, _) =>
-        {
-            if (!_renderPending) return;
-            _renderPending = false;
-            InvalidateVisual();
-        };
-        _renderPump.Start();
 
         StylusDown += OnStylusDown;
         StylusMove += OnStylusMove;
@@ -287,7 +273,8 @@ public sealed class SkiaInkCanvas : SKElement
 
     private void MarkCommittedLayerDirty() => _committedLayerDirty = true;
 
-    private void RequestRender() => _renderPending = true;
+    // Lower input latency: invalidate immediately (WPF will coalesce as needed).
+    private void RequestRender() => InvalidateVisual();
 
     private void DrawStroke(SKCanvas canvas, SkiaStroke stroke) => DrawStrokePoints(canvas, stroke.Points, stroke.Color, stroke.Width);
 
@@ -370,6 +357,7 @@ public sealed class SkiaInkCanvas : SKElement
         public float LastSmoothX { get; set; }
         public float LastSmoothY { get; set; }
         public float LastSmoothW { get; set; }
+        public float LastSmoothP { get; set; }
         public OneEuroFilter? FilterX { get; }
         public OneEuroFilter? FilterY { get; }
         public OneEuroFilter? FilterW { get; }
@@ -478,6 +466,7 @@ public sealed class SkiaInkCanvas : SKElement
                 active.LastSmoothX = x;
                 active.LastSmoothY = y;
                 active.LastSmoothW = w;
+                active.LastSmoothP = p;
                 active.Points.Add(new SkiaStrokePoint { X = x, Y = y, W = w, P = p, T = sample.TimestampMs });
             }
             else
@@ -489,6 +478,7 @@ public sealed class SkiaInkCanvas : SKElement
                 active.LastSmoothX = x;
                 active.LastSmoothY = y;
                 active.LastSmoothW = w;
+                active.LastSmoothP = p;
             }
         }
         else
@@ -508,7 +498,7 @@ public sealed class SkiaInkCanvas : SKElement
             // Flush last sample so the stroke ends at the real pointer location (not the last midpoint).
             if (SmoothingEnabled && active.HasSmoothSeed)
             {
-                active.Points.Add(new SkiaStrokePoint { X = active.LastSmoothX, Y = active.LastSmoothY, W = active.LastSmoothW, P = 0f, T = NowMs() });
+                active.Points.Add(new SkiaStrokePoint { X = active.LastSmoothX, Y = active.LastSmoothY, W = active.LastSmoothW, P = active.LastSmoothP, T = NowMs() });
             }
             _strokes.Add(new SkiaStroke { Color = PenColor, Width = PenWidth, Points = active.Points.ToList() });
             MarkCommittedLayerDirty();
