@@ -195,7 +195,8 @@ public sealed class SkiaInkCanvas : SKElement
     private void OnStylusDown(object sender, StylusDownEventArgs e)
     {
         Focus();
-        CaptureStylus();
+        // Capture per device so multi-touch (often delivered as stylus) can work concurrently.
+        e.StylusDevice?.Capture(this);
         var id = StylusId(e.StylusDevice);
         var sample = GetStylusSample(e, out var hasPressure);
         if (hasPressure) _sawPressureVariation = true;
@@ -219,7 +220,8 @@ public sealed class SkiaInkCanvas : SKElement
 
     private void OnStylusUp(object? sender, StylusEventArgs e)
     {
-        if (IsStylusCaptured) ReleaseStylusCapture();
+        // Release only this device capture.
+        e.StylusDevice?.Capture(null);
         if (Tool == SkiaInkTool.Pen) CommitStroke(StylusId(e.StylusDevice));
         RequestRender();
         e.Handled = true;
