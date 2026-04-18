@@ -11,8 +11,7 @@ namespace SkiaAnnotate.Windows;
 
 public partial class AnnotationOverlayWindow : Window
 {
-    private const int WmNcHitTest = 0x0084;
-    private const int HtTransparent = -1;
+    private const int RgnOr = 2;
     private static bool _hasLastToolbarPosition;
     private static double _lastToolbarLeft;
     private static double _lastToolbarTop;
@@ -31,6 +30,19 @@ public partial class AnnotationOverlayWindow : Window
     private readonly Brush _normalButtonBackground = new SolidColorBrush(Color.FromRgb(250, 250, 250));
     private readonly Brush _normalButtonBorder = new SolidColorBrush(Color.FromRgb(213, 213, 213));
     private readonly Brush _normalButtonForeground = new SolidColorBrush(Color.FromRgb(31, 31, 31));
+    private HwndSource? _hwndSource;
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool bRedraw);
+
+    [DllImport("gdi32.dll", SetLastError = true)]
+    private static extern IntPtr CreateRectRgn(int left, int top, int right, int bottom);
+
+    [DllImport("gdi32.dll", SetLastError = true)]
+    private static extern int CombineRgn(IntPtr hrgnDest, IntPtr hrgnSrc1, IntPtr hrgnSrc2, int fnCombineMode);
+
+    [DllImport("gdi32.dll", SetLastError = true)]
+    private static extern bool DeleteObject(IntPtr hObject);
 
     public AnnotationOverlayWindow()
     {
@@ -53,7 +65,8 @@ public partial class AnnotationOverlayWindow : Window
         {
             if (PresentationSource.FromVisual(this) is HwndSource source)
             {
-                source.AddHook(WndProc);
+                _hwndSource = source;
+                ApplyMouseModeHitRegion();
             }
         };
     }
@@ -109,6 +122,7 @@ public partial class AnnotationOverlayWindow : Window
         CollapsedExpandButton.Visibility = _toolbarCollapsed ? Visibility.Visible : Visibility.Collapsed;
         ToggleButton.Content = _toolbarCollapsed ? "\uE76B" : "\uE76C";
         EnsureToolbarInsideBounds();
+        ApplyMouseModeHitRegion();
     }
 
     private void CollapsedExpandButton_OnClick(object sender, RoutedEventArgs e)
@@ -125,6 +139,7 @@ public partial class AnnotationOverlayWindow : Window
         CollapsedExpandButton.Visibility = Visibility.Collapsed;
         ToggleButton.Content = "\uE76C";
         EnsureToolbarInsideBounds();
+        ApplyMouseModeHitRegion();
     }
 
     private void DragHandle_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -166,6 +181,7 @@ public partial class AnnotationOverlayWindow : Window
         _lastToolbarLeft = Canvas.GetLeft(FloatingToolbar);
         _lastToolbarTop = Canvas.GetTop(FloatingToolbar);
         _hasLastToolbarPosition = true;
+        ApplyMouseModeHitRegion();
         e.Handled = true;
     }
 
@@ -260,6 +276,10 @@ public partial class AnnotationOverlayWindow : Window
         _lastToolbarLeft = left;
         _lastToolbarTop = top;
         _hasLastToolbarPosition = true;
+        if (_isMouseMode)
+        {
+            ApplyMouseModeHitRegion();
+        }
     }
 
     private void SetActiveToolVisual(SkiaInkTool currentTool, bool isMouseMode)
@@ -303,51 +323,65 @@ public partial class AnnotationOverlayWindow : Window
         OverlayInkCanvas.IsHitTestVisible = !enabled;
         OverlayInkCanvas.Cursor = enabled ? Cursors.Arrow : Cursors.Pen;
         SetActiveToolVisual(OverlayInkCanvas.Tool, _isMouseMode);
+        ApplyMouseModeHitRegion();
     }
 
-    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    private void ApplyMouseModeHitRegion()
     {
-        if (!_isMouseMode || msg != WmNcHitTest)
+        if (_hwndSource is null)
         {
-            return IntPtr.Zero;
+            return;
         }
 
-        var screenPoint = GetScreenPointFromLParam(lParam);
-        if (IsScreenPointInsideElement(FloatingToolbar, screenPoint) || IsScreenPointInsideElement(CollapsedExpandButton, screenPoint))
+        var hwnd = _hwndSource.Handle;
+        if (hwnd == IntPtr.Zero)
         {
-            return IntPtr.Zero;
+            return;
         }
 
-        handled = true;
-        return new IntPtr(HtTransparent);
-    }
-
-    private static Point GetScreenPointFromLParam(IntPtr lParam)
-    {
-        var lp = unchecked((long)lParam);
-        var x = unchecked((short)(lp & 0xFFFF));
-        var y = unchecked((short)((lp >> 16) & 0xFFFF));
-        return new Point(x, y);
-    }
-
-    private static bool IsScreenPointInsideElement(FrameworkElement element, Point screenPoint)
-    {
-        if (element.Visibility != Visibility.Visible || element.ActualWidth <= 0 || element.ActualHeight <= 0)
+        if (!_isMouseMode)
         {
-            return false;
+            // Remove custom region: whole window receives hit test.
+            SetWindowRgn(hwnd, IntPtr.Zero, true);
+            return;
         }
 
-        Point topLeft;
-        try
+        // Mouse mode: only toolbar region remains hit-testable, rest will click-through.
+        var toolbarLeft = Canvas.GetLeft(FloatingToolbar);
+        var toolbarTop = Canvas.GetTop(FloatingToolbar);
+        if (double.IsNaN(toolbarLeft) || double.IsNaN(toolbarTop))
         {
-            topLeft = element.PointToScreen(new Point(0, 0));
-        }
-        catch (InvalidOperationException)
-        {
-            return false;
+            return;
         }
 
-        var rect = new Rect(topLeft.X, topLeft.Y, element.ActualWidth, element.ActualHeight);
-        return rect.Contains(screenPoint);
+        var toolbarWidth = Math.Max(1d, FloatingToolbar.ActualWidth > 0 ? FloatingToolbar.ActualWidth : FloatingToolbar.Width);
+        var toolbarHeight = Math.Max(1d, FloatingToolbar.ActualHeight > 0 ? FloatingToolbar.ActualHeight : 42d);
+
+        var region = CreateRectRgn(
+            (int)Math.Floor(toolbarLeft),
+            (int)Math.Floor(toolbarTop),
+            (int)Math.Ceiling(toolbarLeft + toolbarWidth),
+            (int)Math.Ceiling(toolbarTop + toolbarHeight));
+
+        if (CollapsedExpandButton.Visibility == Visibility.Visible)
+        {
+            var cx = Canvas.GetLeft(CollapsedExpandButton);
+            var cy = Canvas.GetTop(CollapsedExpandButton);
+            var cw = Math.Max(1d, CollapsedExpandButton.ActualWidth > 0 ? CollapsedExpandButton.ActualWidth : CollapsedExpandButton.Width);
+            var ch = Math.Max(1d, CollapsedExpandButton.ActualHeight > 0 ? CollapsedExpandButton.ActualHeight : CollapsedExpandButton.Height);
+            var collapsedRegion = CreateRectRgn(
+                (int)Math.Floor(cx),
+                (int)Math.Floor(cy),
+                (int)Math.Ceiling(cx + cw),
+                (int)Math.Ceiling(cy + ch));
+            if (collapsedRegion != IntPtr.Zero)
+            {
+                CombineRgn(region, region, collapsedRegion, RgnOr);
+                DeleteObject(collapsedRegion);
+            }
+        }
+
+        // After successful call, system owns region handle.
+        SetWindowRgn(hwnd, region, true);
     }
 }
