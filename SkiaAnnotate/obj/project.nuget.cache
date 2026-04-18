@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "97gMPd3p7Z4=",
+  "dgSpecHash": "fB7jDboJD3Y=",
   "success": true,
   "projectFilePath": "E:\\SkiaAnnotate\\SkiaAnnotate\\SkiaAnnotate.csproj",
   "expectedPackageFiles": [
@@ -12,9 +12,10 @@
     "C:\\Users\\Administrator\\.nuget\\packages\\skiasharp.nativeassets.win32\\3.119.2\\skiasharp.nativeassets.win32.3.119.2.nupkg.sha512",
     "C:\\Users\\Administrator\\.nuget\\packages\\skiasharp.views.desktop.common\\3.119.2\\skiasharp.views.desktop.common.3.119.2.nupkg.sha512",
     "C:\\Users\\Administrator\\.nuget\\packages\\skiasharp.views.wpf\\3.119.2\\skiasharp.views.wpf.3.119.2.nupkg.sha512",
-    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.36\\microsoft.netcore.app.ref.6.0.36.nupkg.sha512",
     "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.36\\microsoft.windowsdesktop.app.ref.6.0.36.nupkg.sha512",
-    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.36\\microsoft.aspnetcore.app.ref.6.0.36.nupkg.sha512"
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.36\\microsoft.netcore.app.ref.6.0.36.nupkg.sha512",
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.36\\microsoft.aspnetcore.app.ref.6.0.36.nupkg.sha512",
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\6.0.36\\microsoft.netcore.app.host.win-x64.6.0.36.nupkg.sha512"
   ],
   "logs": [
     {

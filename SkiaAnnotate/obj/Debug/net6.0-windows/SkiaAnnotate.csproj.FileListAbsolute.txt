@@ -39,3 +39,4 @@ E:\SkiaAnnotate\SkiaAnnotate\bin\Debug\net6.0-windows\runtimes\win-x64\native\li
 E:\SkiaAnnotate\SkiaAnnotate\bin\Debug\net6.0-windows\runtimes\win-x64\native\libSkiaSharp.pdb
 E:\SkiaAnnotate\SkiaAnnotate\bin\Debug\net6.0-windows\runtimes\win-x86\native\libSkiaSharp.dll
 E:\SkiaAnnotate\SkiaAnnotate\bin\Debug\net6.0-windows\runtimes\win-x86\native\libSkiaSharp.pdb
+E:\SkiaAnnotate\SkiaAnnotate\bin\Debug\net6.0-windows\SkiaAnnotate.exe
