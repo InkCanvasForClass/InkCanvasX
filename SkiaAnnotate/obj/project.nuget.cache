@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "fB7jDboJD3Y=",
+  "dgSpecHash": "5UoXg8WBkH4=",
   "success": true,
   "projectFilePath": "E:\\SkiaAnnotate\\SkiaAnnotate\\SkiaAnnotate.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.net.illink.analyzers\\7.0.100-1.23211.1\\microsoft.net.illink.analyzers.7.0.100-1.23211.1.nupkg.sha512",
+    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.net.illink.tasks\\7.0.100-1.23211.1\\microsoft.net.illink.tasks.7.0.100-1.23211.1.nupkg.sha512",
     "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.office.interop.powerpoint\\15.0.4420.1018\\microsoft.office.interop.powerpoint.15.0.4420.1018.nupkg.sha512",
     "C:\\Users\\Administrator\\.nuget\\packages\\opentk\\3.3.1\\opentk.3.3.1.nupkg.sha512",
     "C:\\Users\\Administrator\\.nuget\\packages\\opentk.glwpfcontrol\\3.3.0\\opentk.glwpfcontrol.3.3.0.nupkg.sha512",
