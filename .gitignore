@@ -66,6 +66,7 @@ SkiaAnnotate/obj/
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 **/.vs/
+.vs/SkiaAnnotate/
 
 # Visual Studio & tooling caches (safe to ignore)
 **/.vshistory/
