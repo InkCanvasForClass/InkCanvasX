@@ -10,8 +10,20 @@ public sealed class PresentationModeService
 {
     private AnnotationOverlayWindow? _overlayWindow;
     private readonly Dictionary<int, List<SkiaStroke>> _slideInkCache = new();
+    private readonly DispatcherTimer _slideSyncRetryTimer;
+    private PptInteropService? _pendingSyncService;
+    private int _syncRetryCount;
     private int _activeSlideNumber;
     private bool _isSlideContentInitialized;
+
+    public PresentationModeService()
+    {
+        _slideSyncRetryTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(45)
+        };
+        _slideSyncRetryTimer.Tick += OnSlideSyncRetryTick;
+    }
 
     public bool IsPresentationMode => _overlayWindow is not null;
 
@@ -33,26 +45,41 @@ public sealed class PresentationModeService
         Enter(pptInteropService, bounds, currentSlideNumber);
     }
 
-    public void EnsureOverlayHidden()
+    public void EnsureOverlayHidden(bool clearInkCache = false)
     {
         if (_overlayWindow is null)
         {
+            if (clearInkCache)
+            {
+                ResetSession();
+            }
             return;
         }
 
         var overlay = _overlayWindow;
         _overlayWindow = null;
+        _slideSyncRetryTimer.Stop();
+        _pendingSyncService = null;
+        _syncRetryCount = 0;
         SaveCurrentSlideInkSnapshot();
-        _slideInkCache.Clear();
-        _activeSlideNumber = 0;
-        _isSlideContentInitialized = false;
+        if (clearInkCache)
+        {
+            ResetSession();
+        }
         overlay.Close();
     }
 
     public void ExitOverlayAndSlideShow(PptInteropService pptInteropService)
     {
-        EnsureOverlayHidden();
+        EnsureOverlayHidden(clearInkCache: true);
         pptInteropService.EndSlideShow();
+    }
+
+    public void ResetSession()
+    {
+        _slideInkCache.Clear();
+        _activeSlideNumber = 0;
+        _isSlideContentInitialized = false;
     }
 
     private void Enter(PptInteropService pptInteropService, Rect bounds, int currentSlideNumber)
@@ -147,16 +174,31 @@ public sealed class PresentationModeService
 
     private void ScheduleSlideSync(PptInteropService pptInteropService)
     {
-        var timer = new DispatcherTimer
+        // First sync immediately, then retry a few short ticks to catch transition lag.
+        var currentSlideNumber = pptInteropService.GetCurrentSlideNumberInShow();
+        SyncStrokesForSlide(currentSlideNumber);
+
+        _pendingSyncService = pptInteropService;
+        _syncRetryCount = 0;
+        _slideSyncRetryTimer.Start();
+    }
+
+    private void OnSlideSyncRetryTick(object? sender, EventArgs e)
+    {
+        if (_pendingSyncService is null || _overlayWindow is null)
         {
-            Interval = TimeSpan.FromMilliseconds(70)
-        };
-        timer.Tick += (_, _) =>
+            _slideSyncRetryTimer.Stop();
+            return;
+        }
+
+        var slideNumber = _pendingSyncService.GetCurrentSlideNumberInShow();
+        SyncStrokesForSlide(slideNumber);
+
+        _syncRetryCount++;
+        if (_syncRetryCount >= 5)
         {
-            timer.Stop();
-            var currentSlideNumber = pptInteropService.GetCurrentSlideNumberInShow();
-            SyncStrokesForSlide(currentSlideNumber);
-        };
-        timer.Start();
+            _slideSyncRetryTimer.Stop();
+            _pendingSyncService = null;
+        }
     }
 }

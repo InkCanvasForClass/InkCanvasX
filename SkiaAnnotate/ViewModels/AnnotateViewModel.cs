@@ -21,6 +21,9 @@ public sealed class AnnotateViewModel : INotifyPropertyChanged, IDisposable
     private readonly Dictionary<int, StrokeCollection> _pageStrokes = new();
     private readonly DispatcherTimer _linkMonitorTimer;
     private bool _isLinkModeEnabled;
+    private bool _wasSlideShowRunning;
+    private bool _wasConnected;
+    private string? _lastStatusMessage;
 
     private int _slideCount;
     private int _currentSlideIndex;
@@ -318,8 +321,8 @@ public sealed class AnnotateViewModel : INotifyPropertyChanged, IDisposable
 
         IsLinkModeEnabled = false;
         _linkMonitorTimer.Stop();
-        _presentationModeService.EnsureOverlayHidden();
-        StatusMessage = "已停止联动监听。";
+        _presentationModeService.EnsureOverlayHidden(clearInkCache: true);
+        SetStatusMessage("已停止联动监听。");
         AppLogger.Info("手动停止联动监听。");
     }
 
@@ -358,11 +361,21 @@ public sealed class AnnotateViewModel : INotifyPropertyChanged, IDisposable
 
         if (!_pptInteropService.IsConnectedToPowerPoint)
         {
+            if (_wasConnected)
+            {
+                AppLogger.Warn("PowerPoint 连接已断开。");
+                _presentationModeService.ResetSession();
+            }
+
+            _wasConnected = false;
+            _wasSlideShowRunning = false;
             TryConnectPowerPointSilently();
-            _presentationModeService.EnsureOverlayHidden();
+            _presentationModeService.EnsureOverlayHidden(clearInkCache: false);
+            SetStatusMessage("等待连接 PowerPoint。");
             return;
         }
 
+        _wasConnected = true;
         _pptInteropService.TryRefreshActivePresentation();
 
         if (_pptInteropService.IsOpened)
@@ -374,16 +387,27 @@ public sealed class AnnotateViewModel : INotifyPropertyChanged, IDisposable
             }
         }
 
-        if (_pptInteropService.IsSlideShowRunning())
+        var isSlideShowRunning = _pptInteropService.IsSlideShowRunning();
+        if (isSlideShowRunning)
         {
             _presentationModeService.EnsureOverlayVisible(_pptInteropService);
-            StatusMessage = "PPT 放映中：批注栏已显示。";
+            SetStatusMessage("PPT 放映中：批注栏已显示。");
+            if (!_wasSlideShowRunning)
+            {
+                AppLogger.Info("检测到放映启动，显示批注覆盖层。");
+            }
         }
         else
         {
-            _presentationModeService.EnsureOverlayHidden();
-            StatusMessage = "已连接 PowerPoint，等待放映开始。";
+            _presentationModeService.EnsureOverlayHidden(clearInkCache: false);
+            SetStatusMessage("已连接 PowerPoint，等待放映开始。");
+            if (_wasSlideShowRunning)
+            {
+                AppLogger.Info("检测到放映结束，隐藏批注覆盖层。");
+            }
         }
+
+        _wasSlideShowRunning = isSlideShowRunning;
     }
 
     private void TryConnectPowerPointSilently()
@@ -399,5 +423,16 @@ public sealed class AnnotateViewModel : INotifyPropertyChanged, IDisposable
             // 后台模式下静默重试，不打断用户的 PowerPoint 操作。
             AppLogger.Warn($"静默重连 PowerPoint 失败：{ex.Message}");
         }
+    }
+
+    private void SetStatusMessage(string message)
+    {
+        if (_lastStatusMessage == message)
+        {
+            return;
+        }
+
+        _lastStatusMessage = message;
+        StatusMessage = message;
     }
 }
