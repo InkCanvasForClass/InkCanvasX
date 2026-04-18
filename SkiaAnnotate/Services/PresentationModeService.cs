@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Ink;
 using System.Windows.Threading;
+using SkiaAnnotate.Controls;
 using SkiaAnnotate.Windows;
 
 namespace SkiaAnnotate.Services;
@@ -9,7 +9,7 @@ namespace SkiaAnnotate.Services;
 public sealed class PresentationModeService
 {
     private AnnotationOverlayWindow? _overlayWindow;
-    private readonly Dictionary<int, StrokeCollection> _slideInkCache = new();
+    private readonly Dictionary<int, List<SkiaStroke>> _slideInkCache = new();
     private int _activeSlideNumber;
     private bool _isSlideContentInitialized;
 
@@ -116,7 +116,7 @@ public sealed class PresentationModeService
         }
         else
         {
-            _overlayWindow.SetCurrentStrokes(new StrokeCollection());
+            _overlayWindow.SetCurrentStrokes(new List<SkiaStroke>());
         }
 
         _isSlideContentInitialized = true;

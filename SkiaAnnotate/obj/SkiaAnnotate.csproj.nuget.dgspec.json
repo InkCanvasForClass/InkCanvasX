@@ -53,6 +53,10 @@
             "Microsoft.Office.Interop.PowerPoint": {
               "target": "Package",
               "version": "[15.0.4420.1018, )"
+            },
+            "SkiaSharp.Views.WPF": {
+              "target": "Package",
+              "version": "[3.119.2, )"
             }
           },
           "imports": [

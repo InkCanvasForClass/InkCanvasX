@@ -1,9 +1,9 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
+using SkiaAnnotate.Controls;
 
 namespace SkiaAnnotate.Windows;
 
@@ -31,15 +31,10 @@ public partial class AnnotationOverlayWindow : Window
     {
         InitializeComponent();
 
-        OverlayInkCanvas.EditingMode = InkCanvasEditingMode.Ink;
         OverlayInkCanvas.IsHitTestVisible = true;
-        OverlayInkCanvas.DefaultDrawingAttributes = new DrawingAttributes
-        {
-            Color = Colors.Red,
-            Width = 4,
-            Height = 4,
-            FitToCurve = true
-        };
+        OverlayInkCanvas.Tool = SkiaInkTool.Pen;
+        OverlayInkCanvas.PenColor = Colors.Red;
+        OverlayInkCanvas.PenWidth = 4f;
 
         Loaded += (_, _) =>
         {
@@ -55,11 +50,11 @@ public partial class AnnotationOverlayWindow : Window
     public event Action? PreviousSlideRequested;
     public event Action? ExitRequested;
 
-    public StrokeCollection GetCurrentStrokesSnapshot() => OverlayInkCanvas.Strokes.Clone();
+    public List<SkiaStroke> GetCurrentStrokesSnapshot() => OverlayInkCanvas.GetSnapshot();
 
-    public void SetCurrentStrokes(StrokeCollection strokes)
+    public void SetCurrentStrokes(List<SkiaStroke> strokes)
     {
-        OverlayInkCanvas.Strokes = strokes.Clone();
+        OverlayInkCanvas.SetSnapshot(strokes);
     }
 
     private void PreviousSlide_OnClick(object sender, RoutedEventArgs e) => PreviousSlideRequested?.Invoke();
@@ -68,20 +63,19 @@ public partial class AnnotationOverlayWindow : Window
 
     private void Pen_OnClick(object sender, RoutedEventArgs e)
     {
-        OverlayInkCanvas.EditingMode = InkCanvasEditingMode.Ink;
-        OverlayInkCanvas.EditingModeInverted = InkCanvasEditingMode.EraseByStroke;
+        OverlayInkCanvas.Tool = SkiaInkTool.Pen;
         SetActiveToolVisual(isPenActive: true);
         OverlayInkCanvas.Focus();
     }
 
     private void Eraser_OnClick(object sender, RoutedEventArgs e)
     {
-        OverlayInkCanvas.EditingMode = InkCanvasEditingMode.EraseByStroke;
+        OverlayInkCanvas.Tool = SkiaInkTool.Eraser;
         SetActiveToolVisual(isPenActive: false);
         OverlayInkCanvas.Focus();
     }
 
-    private void Clear_OnClick(object sender, RoutedEventArgs e) => OverlayInkCanvas.Strokes.Clear();
+    private void Clear_OnClick(object sender, RoutedEventArgs e) => OverlayInkCanvas.Clear();
 
     private void ToggleToolbar_OnClick(object sender, RoutedEventArgs e)
     {

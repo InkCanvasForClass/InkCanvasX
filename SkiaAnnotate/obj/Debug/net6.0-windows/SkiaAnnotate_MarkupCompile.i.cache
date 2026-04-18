@@ -12,9 +12,9 @@ TRACE;DEBUG;NET;NET6_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR
 E:\SkiaAnnotate\SkiaAnnotate\App.xaml
 31547741283
 
-12247316007
-195-2062659500
+13-436319401
+200-604077511
 MainWindow.xaml;Pages\AnnotatePage.xaml;Windows\AnnotationOverlayWindow.xaml;
 
-False
+True
 

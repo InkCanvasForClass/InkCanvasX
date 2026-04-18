@@ -1,6 +1,7 @@
 <Window x:Class="SkiaAnnotate.Windows.AnnotationOverlayWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:SkiaAnnotate.Controls"
         WindowStyle="None"
         ResizeMode="NoResize"
         AllowsTransparency="True"
@@ -99,7 +100,7 @@
     </Window.Resources>
 
     <Grid x:Name="RootGrid" Background="#01000000">
-        <InkCanvas x:Name="OverlayInkCanvas" Background="#01000000" Cursor="Pen" />
+        <controls:SkiaInkCanvas x:Name="OverlayInkCanvas" />
 
         <Canvas x:Name="ToolbarHost" IsHitTestVisible="True">
             <Border x:Name="FloatingToolbar"
