@@ -102,10 +102,10 @@
     </Window.Resources>
 
     <Grid x:Name="RootGrid" Background="#01000000">
-        <controls:SkiaInkCanvas x:Name="OverlayInkCanvas"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Stretch"
-                                Margin="0" />
+        <controls:DirectInkCanvasHost x:Name="OverlayInkCanvas"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch"
+                                      Margin="0" />
 
         <Canvas x:Name="ToolbarHost" IsHitTestVisible="True">
             <Border x:Name="FloatingToolbar"
