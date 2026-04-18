@@ -346,6 +346,9 @@ public partial class AnnotationOverlayWindow : Window
             return;
         }
 
+        // Ensure ActualWidth/ActualHeight are up-to-date before building region.
+        UpdateLayout();
+
         // Mouse mode: only toolbar region remains hit-testable, rest will click-through.
         var toolbarLeft = Canvas.GetLeft(FloatingToolbar);
         var toolbarTop = Canvas.GetTop(FloatingToolbar);
@@ -357,11 +360,14 @@ public partial class AnnotationOverlayWindow : Window
         var toolbarWidth = Math.Max(1d, FloatingToolbar.ActualWidth > 0 ? FloatingToolbar.ActualWidth : FloatingToolbar.Width);
         var toolbarHeight = Math.Max(1d, FloatingToolbar.ActualHeight > 0 ? FloatingToolbar.ActualHeight : 42d);
 
-        var region = CreateRectRgn(
-            (int)Math.Floor(toolbarLeft),
-            (int)Math.Floor(toolbarTop),
-            (int)Math.Ceiling(toolbarLeft + toolbarWidth),
-            (int)Math.Ceiling(toolbarTop + toolbarHeight));
+        var mainRect = DipRectToPixelRect(new Rect(toolbarLeft, toolbarTop, toolbarWidth, toolbarHeight));
+        var region = CreateRectRgn(mainRect.left, mainRect.top, mainRect.right, mainRect.bottom);
+        if (region == IntPtr.Zero)
+        {
+            // Safety fallback: don't break UI hit area.
+            SetWindowRgn(hwnd, IntPtr.Zero, true);
+            return;
+        }
 
         if (CollapsedExpandButton.Visibility == Visibility.Visible)
         {
@@ -369,11 +375,12 @@ public partial class AnnotationOverlayWindow : Window
             var cy = Canvas.GetTop(CollapsedExpandButton);
             var cw = Math.Max(1d, CollapsedExpandButton.ActualWidth > 0 ? CollapsedExpandButton.ActualWidth : CollapsedExpandButton.Width);
             var ch = Math.Max(1d, CollapsedExpandButton.ActualHeight > 0 ? CollapsedExpandButton.ActualHeight : CollapsedExpandButton.Height);
+            var collapsedRect = DipRectToPixelRect(new Rect(cx, cy, cw, ch));
             var collapsedRegion = CreateRectRgn(
-                (int)Math.Floor(cx),
-                (int)Math.Floor(cy),
-                (int)Math.Ceiling(cx + cw),
-                (int)Math.Ceiling(cy + ch));
+                collapsedRect.left,
+                collapsedRect.top,
+                collapsedRect.right,
+                collapsedRect.bottom);
             if (collapsedRegion != IntPtr.Zero)
             {
                 CombineRgn(region, region, collapsedRegion, RgnOr);
@@ -381,7 +388,22 @@ public partial class AnnotationOverlayWindow : Window
             }
         }
 
-        // After successful call, system owns region handle.
-        SetWindowRgn(hwnd, region, true);
+        // After successful call, system owns region handle; on failure we must free it.
+        var result = SetWindowRgn(hwnd, region, true);
+        if (result == 0)
+        {
+            DeleteObject(region);
+            SetWindowRgn(hwnd, IntPtr.Zero, true);
+        }
+    }
+
+    private (int left, int top, int right, int bottom) DipRectToPixelRect(Rect dipRect)
+    {
+        var matrix = _hwndSource?.CompositionTarget?.TransformToDevice ?? Matrix.Identity;
+        var left = (int)Math.Floor(dipRect.Left * matrix.M11);
+        var top = (int)Math.Floor(dipRect.Top * matrix.M22);
+        var right = (int)Math.Ceiling((dipRect.Left + dipRect.Width) * matrix.M11);
+        var bottom = (int)Math.Ceiling((dipRect.Top + dipRect.Height) * matrix.M22);
+        return (left, top, right, bottom);
     }
 }
