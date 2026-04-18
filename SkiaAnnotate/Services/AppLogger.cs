@@ -15,7 +15,7 @@ public static class AppLogger
         var baseDir = AppContext.BaseDirectory;
         LogDirectory = Path.Combine(baseDir, "logs");
         Directory.CreateDirectory(LogDirectory);
-        LogFilePath = Path.Combine(LogDirectory, $"app-{DateTime.Now:yyyyMMdd}.log");
+        LogFilePath = Path.Combine(LogDirectory, $"app-{DateTime.Now:yyyyMMdd}.txt");
     }
 
     public static string CurrentLogDirectory => LogDirectory;
