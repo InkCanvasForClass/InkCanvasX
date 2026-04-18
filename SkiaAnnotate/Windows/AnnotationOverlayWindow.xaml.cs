@@ -50,11 +50,15 @@ public partial class AnnotationOverlayWindow : Window
     public event Action? PreviousSlideRequested;
     public event Action? ExitRequested;
 
-    public List<SkiaStroke> GetCurrentStrokesSnapshot() => OverlayInkCanvas.GetSnapshot();
+    public List<SkiaStroke> GetCurrentStrokesSnapshot()
+    {
+        OverlayInkCanvas.CommitActiveStroke();
+        return OverlayInkCanvas.GetBoundStrokes();
+    }
 
     public void SetCurrentStrokes(List<SkiaStroke> strokes)
     {
-        OverlayInkCanvas.SetSnapshot(strokes);
+        OverlayInkCanvas.BindStrokes(strokes);
     }
 
     private void PreviousSlide_OnClick(object sender, RoutedEventArgs e) => PreviousSlideRequested?.Invoke();

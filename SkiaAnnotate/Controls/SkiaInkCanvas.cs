@@ -31,7 +31,7 @@ public sealed class SkiaStroke
 
 public sealed class SkiaInkCanvas : SKElement
 {
-    private readonly List<SkiaStroke> _strokes = new();
+    private List<SkiaStroke> _strokes = new();
     private readonly List<SkiaStrokePoint> _activePoints = new();
 
     public SkiaInkTool Tool { get; set; } = SkiaInkTool.Pen;
@@ -50,12 +50,32 @@ public sealed class SkiaInkCanvas : SKElement
         MouseLeave += OnMouseUp;
     }
 
-    public List<SkiaStroke> GetSnapshot() => CloneStrokes(_strokes);
-
-    public void SetSnapshot(List<SkiaStroke> strokes)
+    /// <summary>
+    /// Bind strokes list by reference (no cloning).
+    /// Caller owns the list lifecycle; canvas mutates the list in-place.
+    /// </summary>
+    public void BindStrokes(List<SkiaStroke> strokes)
     {
-        _strokes.Clear();
-        _strokes.AddRange(CloneStrokes(strokes));
+        _strokes = strokes;
+        _activePoints.Clear();
+        InvalidateVisual();
+    }
+
+    public List<SkiaStroke> GetBoundStrokes() => _strokes;
+
+    public void CommitActiveStroke()
+    {
+        if (_activePoints.Count == 0)
+        {
+            return;
+        }
+
+        _strokes.Add(new SkiaStroke
+        {
+            Color = PenColor,
+            Width = PenWidth,
+            Points = _activePoints.Select(p => new SkiaStrokePoint { X = p.X, Y = p.Y }).ToList()
+        });
         _activePoints.Clear();
         InvalidateVisual();
     }
@@ -113,16 +133,9 @@ public sealed class SkiaInkCanvas : SKElement
             ReleaseMouseCapture();
         }
 
-        if (Tool == SkiaInkTool.Pen && _activePoints.Count > 0)
+        if (Tool == SkiaInkTool.Pen)
         {
-            _strokes.Add(new SkiaStroke
-            {
-                Color = PenColor,
-                Width = PenWidth,
-                Points = _activePoints.Select(p => new SkiaStrokePoint { X = p.X, Y = p.Y }).ToList()
-            });
-            _activePoints.Clear();
-            InvalidateVisual();
+            CommitActiveStroke();
         }
     }
 
@@ -200,11 +213,5 @@ public sealed class SkiaInkCanvas : SKElement
         canvas.DrawPath(path, paint);
     }
 
-    private static List<SkiaStroke> CloneStrokes(IEnumerable<SkiaStroke> source) =>
-        source.Select(s => new SkiaStroke
-        {
-            Color = s.Color,
-            Width = s.Width,
-            Points = s.Points.Select(p => new SkiaStrokePoint { X = p.X, Y = p.Y }).ToList()
-        }).ToList();
+    // Intentionally no deep-clone here for performance (Inkeys style binding).
 }

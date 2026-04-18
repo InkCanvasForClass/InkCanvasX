@@ -110,14 +110,13 @@ public sealed class PresentationModeService
             return;
         }
 
-        if (_slideInkCache.TryGetValue(currentSlideNumber, out var strokes))
+        if (!_slideInkCache.TryGetValue(currentSlideNumber, out var strokes))
         {
-            _overlayWindow.SetCurrentStrokes(strokes);
+            strokes = new List<SkiaStroke>();
+            _slideInkCache[currentSlideNumber] = strokes;
         }
-        else
-        {
-            _overlayWindow.SetCurrentStrokes(new List<SkiaStroke>());
-        }
+
+        _overlayWindow.SetCurrentStrokes(strokes);
 
         _isSlideContentInitialized = true;
     }

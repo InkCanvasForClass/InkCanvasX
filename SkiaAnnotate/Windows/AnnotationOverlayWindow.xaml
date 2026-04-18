@@ -134,11 +134,11 @@
                     </Border>
 
                     <StackPanel x:Name="ToolbarButtonPanel" Orientation="Horizontal" Margin="6,5">
-                        <Button Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE72B;" Click="PreviousSlide_OnClick" ToolTip="上一页" />
-                        <Button Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE72A;" Click="NextSlide_OnClick" ToolTip="下一页" />
+                        <Button Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE100;" Click="PreviousSlide_OnClick" ToolTip="上一页" />
+                        <Button Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE101;" Click="NextSlide_OnClick" ToolTip="下一页" />
                         <Border Width="1" Height="20" Margin="4,0" Background="#CFCFCF" VerticalAlignment="Center" />
-                        <Button x:Name="PenButton" Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE790;" Click="Pen_OnClick" ToolTip="画笔" />
-                        <Button x:Name="EraserButton" Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE1D5;" Click="Eraser_OnClick" ToolTip="橡皮" />
+                        <Button x:Name="PenButton" Style="{StaticResource IconToolbarButtonStyle}" Content="&#xED5F;" Click="Pen_OnClick" ToolTip="画笔" />
+                        <Button x:Name="EraserButton" Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE75C;" Click="Eraser_OnClick" ToolTip="橡皮" />
                         <Button Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE74D;" Click="Clear_OnClick" ToolTip="清空当前页" />
                         <Border Width="1" Height="20" Margin="4,0" Background="#CFCFCF" VerticalAlignment="Center" />
                         <Button x:Name="ToggleButton" Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE76C;" Click="ToggleToolbar_OnClick" ToolTip="收起或展开" />
