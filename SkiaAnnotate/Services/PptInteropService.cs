@@ -8,6 +8,8 @@ namespace SkiaAnnotate.Services;
 
 public sealed class PptInteropService : IDisposable
 {
+    private const int RpcECallRejected = unchecked((int)0x80010001);
+
     [StructLayout(LayoutKind.Sequential)]
     private struct RECT
     {
@@ -139,7 +141,7 @@ public sealed class PptInteropService : IDisposable
                 return false;
             }
 
-            _presentation = _application.ActivePresentation;
+            _presentation = RetryCom(() => _application.ActivePresentation);
             return _presentation is not null;
         }
         catch
@@ -157,7 +159,7 @@ public sealed class PptInteropService : IDisposable
 
         try
         {
-            return _application.SlideShowWindows.Count > 0;
+            return RetryCom(() => (int)_application.SlideShowWindows.Count) > 0;
         }
         catch
         {
@@ -193,7 +195,7 @@ public sealed class PptInteropService : IDisposable
 
         try
         {
-            return (int)slideShowWindow.View.CurrentShowPosition;
+            return RetryCom(() => (int)slideShowWindow.View.CurrentShowPosition);
         }
         catch
         {
@@ -209,7 +211,14 @@ public sealed class PptInteropService : IDisposable
             return;
         }
 
-        slideShowWindow.View.Next();
+        try
+        {
+            RetryCom(() => { slideShowWindow.View.Next(); return 0; });
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     public void PreviousSlideInShow()
@@ -220,7 +229,14 @@ public sealed class PptInteropService : IDisposable
             return;
         }
 
-        slideShowWindow.View.Previous();
+        try
+        {
+            RetryCom(() => { slideShowWindow.View.Previous(); return 0; });
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     public Rect GetSlideShowBounds()
@@ -281,12 +297,31 @@ public sealed class PptInteropService : IDisposable
 
         try
         {
-            return _application.SlideShowWindows.Count > 0 ? _application.SlideShowWindows[1] : null;
+            var count = RetryCom(() => (int)_application.SlideShowWindows.Count);
+            return count > 0 ? RetryCom(() => _application.SlideShowWindows[1]) : null;
         }
         catch
         {
             return null;
         }
+    }
+
+    private static T RetryCom<T>(Func<T> action, int maxAttempts = 6)
+    {
+        for (var attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            try
+            {
+                return action();
+            }
+            catch (COMException ex) when (ex.HResult == RpcECallRejected)
+            {
+                var delayMs = 20 + attempt * 20;
+                System.Threading.Thread.Sleep(delayMs);
+            }
+        }
+
+        return action();
     }
 
     private static dynamic CreateApplication()

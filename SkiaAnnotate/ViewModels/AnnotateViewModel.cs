@@ -359,6 +359,8 @@ public sealed class AnnotateViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
+        try
+        {
         if (!_pptInteropService.IsConnectedToPowerPoint)
         {
             if (_wasConnected)
@@ -408,6 +410,17 @@ public sealed class AnnotateViewModel : INotifyPropertyChanged, IDisposable
         }
 
         _wasSlideShowRunning = isSlideShowRunning;
+        }
+        catch (System.Runtime.InteropServices.COMException ex) when (ex.HResult == unchecked((int)0x80010001))
+        {
+            // PowerPoint busy: skip this tick and keep running.
+            AppLogger.Warn($"PowerPoint 忙，跳过一次轮询：{ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            // Never crash background loop
+            AppLogger.Error("联动轮询异常，已降级跳过本次。", ex);
+        }
     }
 
     private void TryConnectPowerPointSilently()

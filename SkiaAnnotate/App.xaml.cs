@@ -12,6 +12,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
         RegisterGlobalExceptionHandlers();
+        OleMessageFilter.Register();
         AppLogger.Info("应用启动。");
         _backgroundViewModel = new AnnotateViewModel(new PptInteropService(), new PresentationModeService());
         _backgroundViewModel.StartSilentLinkMode();
@@ -21,6 +22,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         _backgroundViewModel?.Dispose();
+        OleMessageFilter.Revoke();
         AppLogger.Info("应用退出。");
         base.OnExit(e);
     }
@@ -30,6 +32,8 @@ public partial class App : Application
         DispatcherUnhandledException += (_, args) =>
         {
             AppLogger.Error("UI 线程未处理异常。", args.Exception);
+            // Prevent crash for recoverable errors (COM busy etc.)
+            args.Handled = true;
         };
 
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
