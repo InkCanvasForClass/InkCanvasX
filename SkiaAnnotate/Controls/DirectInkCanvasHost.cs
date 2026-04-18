@@ -322,10 +322,14 @@ public sealed class DirectInkCanvasHost : HwndHost, IDisposable
             return;
         }
 
-        for (var i = 1; i < stroke.Points.Count; i++)
+        var drawPoints = SmoothingEnabled && stroke.Points.Count >= 4
+            ? BuildInkeysStyleSmoothPoints(stroke.Points)
+            : stroke.Points;
+
+        for (var i = 1; i < drawPoints.Count; i++)
         {
-            var a = stroke.Points[i - 1];
-            var b = stroke.Points[i];
+            var a = drawPoints[i - 1];
+            var b = drawPoints[i];
             var wA = a.W > 0 ? a.W : stroke.Width;
             var wB = b.W > 0 ? b.W : stroke.Width;
             var w = (wA + wB) * 0.5f;
@@ -554,7 +558,10 @@ public sealed class DirectInkCanvasHost : HwndHost, IDisposable
             w = active.FilterW.Filter(w, dt, speed);
         }
 
-        if (!isStart && dist < 0.35f)
+        // Inkeys-like adaptive sampling:
+        // low speed keeps denser points (smoother detail), high speed thins samples (less jitter/overdraw).
+        var minDist = Clamp(0.20f + speed / 4800f, 0.20f, 1.20f);
+        if (!isStart && dist < minDist)
         {
             active.LastX = sample.X;
             active.LastY = sample.Y;
@@ -575,6 +582,67 @@ public sealed class DirectInkCanvasHost : HwndHost, IDisposable
         active.LastY = sample.Y;
         active.LastT = sample.TimestampMs;
         RequestRedraw();
+    }
+
+    private static List<InkPoint> BuildInkeysStyleSmoothPoints(List<InkPoint> source)
+    {
+        if (source.Count < 4)
+        {
+            return source;
+        }
+
+        // Catmull-Rom spline reconstruction for pen trajectories.
+        // It preserves local shape and feels closer to natural handwriting than plain polyline.
+        var result = new List<InkPoint>(source.Count * 3)
+        {
+            source[0]
+        };
+
+        for (var i = 0; i < source.Count - 1; i++)
+        {
+            var p0 = source[Math.Max(0, i - 1)];
+            var p1 = source[i];
+            var p2 = source[i + 1];
+            var p3 = source[Math.Min(source.Count - 1, i + 2)];
+
+            var segLen = Distance(p1, p2);
+            var subdivisions = (int)Clamp(segLen / 1.8f, 1f, 6f);
+
+            for (var step = 1; step <= subdivisions; step++)
+            {
+                var t = step / (float)subdivisions;
+                result.Add(CatmullInterpolate(p0, p1, p2, p3, t));
+            }
+        }
+
+        return result;
+    }
+
+    private static InkPoint CatmullInterpolate(InkPoint p0, InkPoint p1, InkPoint p2, InkPoint p3, float t)
+    {
+        var t2 = t * t;
+        var t3 = t2 * t;
+
+        var x = 0.5f * ((2f * p1.X) + (-p0.X + p2.X) * t + (2f * p0.X - 5f * p1.X + 4f * p2.X - p3.X) * t2 + (-p0.X + 3f * p1.X - 3f * p2.X + p3.X) * t3);
+        var y = 0.5f * ((2f * p1.Y) + (-p0.Y + p2.Y) * t + (2f * p0.Y - 5f * p1.Y + 4f * p2.Y - p3.Y) * t2 + (-p0.Y + 3f * p1.Y - 3f * p2.Y + p3.Y) * t3);
+        var w = 0.5f * ((2f * p1.W) + (-p0.W + p2.W) * t + (2f * p0.W - 5f * p1.W + 4f * p2.W - p3.W) * t2 + (-p0.W + 3f * p1.W - 3f * p2.W + p3.W) * t3);
+        var pressure = 0.5f * ((2f * p1.P) + (-p0.P + p2.P) * t + (2f * p0.P - 5f * p1.P + 4f * p2.P - p3.P) * t2 + (-p0.P + 3f * p1.P - 3f * p2.P + p3.P) * t3);
+
+        return new InkPoint
+        {
+            X = x,
+            Y = y,
+            W = Math.Max(0.1f, w),
+            P = Clamp(pressure, 0f, 1f),
+            T = p2.T
+        };
+    }
+
+    private static float Distance(InkPoint a, InkPoint b)
+    {
+        var dx = b.X - a.X;
+        var dy = b.Y - a.Y;
+        return (float)Math.Sqrt(dx * dx + dy * dy);
     }
 
     private void CommitStroke(int id)
