@@ -143,6 +143,12 @@ public sealed class SkiaInkCanvas : SKElement
         var canvas = e.Surface.Canvas;
         canvas.Clear(SKColors.Transparent);
 
+        var widthDip = (float)Math.Max(1d, ActualWidth);
+        var heightDip = (float)Math.Max(1d, ActualHeight);
+        var scaleX = e.Info.Width / widthDip;
+        var scaleY = e.Info.Height / heightDip;
+        canvas.Scale(scaleX, scaleY);
+
         foreach (var stroke in _strokes)
         {
             DrawStroke(canvas, stroke);
