@@ -227,7 +227,8 @@ public sealed class DirectInkCanvasHost : HwndHost, IDisposable
         var rtProps = new RenderTargetProperties
         {
             Type = RenderTargetType.Hardware,
-            PixelFormat = new Vortice.DCommon.PixelFormat(Vortice.DXGI.Format.Unknown, Vortice.DCommon.AlphaMode.Premultiplied),
+            // ID2D1DCRenderTarget supports only BGRA-family pixel formats.
+            PixelFormat = new Vortice.DCommon.PixelFormat(Vortice.DXGI.Format.B8G8R8A8_UNorm, Vortice.DCommon.AlphaMode.Premultiplied),
             Usage = RenderTargetUsage.None,
             MinLevel = FeatureLevel.Default
         };
