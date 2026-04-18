@@ -32,7 +32,7 @@ public partial class AnnotationOverlayWindow : Window
         InitializeComponent();
 
         OverlayInkCanvas.IsHitTestVisible = true;
-        OverlayInkCanvas.Tool = InkTool.Pen;
+        OverlayInkCanvas.Tool = SkiaInkTool.Pen;
         OverlayInkCanvas.PenColor = Colors.Red;
         OverlayInkCanvas.PenWidth = 4f;
 
@@ -50,13 +50,13 @@ public partial class AnnotationOverlayWindow : Window
     public event Action? PreviousSlideRequested;
     public event Action? ExitRequested;
 
-    public List<InkStroke> GetCurrentStrokesSnapshot()
+    public List<SkiaStroke> GetCurrentStrokesSnapshot()
     {
         OverlayInkCanvas.CommitActiveStroke();
         return OverlayInkCanvas.GetBoundStrokes();
     }
 
-    public void SetCurrentStrokes(List<InkStroke> strokes)
+    public void SetCurrentStrokes(List<SkiaStroke> strokes)
     {
         OverlayInkCanvas.BindStrokes(strokes);
     }
@@ -67,14 +67,14 @@ public partial class AnnotationOverlayWindow : Window
 
     private void Pen_OnClick(object sender, RoutedEventArgs e)
     {
-        OverlayInkCanvas.Tool = InkTool.Pen;
+        OverlayInkCanvas.Tool = SkiaInkTool.Pen;
         SetActiveToolVisual(isPenActive: true);
         OverlayInkCanvas.Focus();
     }
 
     private void Eraser_OnClick(object sender, RoutedEventArgs e)
     {
-        OverlayInkCanvas.Tool = InkTool.Eraser;
+        OverlayInkCanvas.Tool = SkiaInkTool.Eraser;
         SetActiveToolVisual(isPenActive: false);
         OverlayInkCanvas.Focus();
     }

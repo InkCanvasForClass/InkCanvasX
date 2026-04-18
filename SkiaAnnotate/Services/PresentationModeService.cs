@@ -9,7 +9,7 @@ namespace SkiaAnnotate.Services;
 public sealed class PresentationModeService
 {
     private AnnotationOverlayWindow? _overlayWindow;
-    private readonly Dictionary<int, List<InkStroke>> _slideInkCache = new();
+    private readonly Dictionary<int, List<SkiaStroke>> _slideInkCache = new();
     private readonly DispatcherTimer _slideSyncRetryTimer;
     private PptInteropService? _pendingSyncService;
     private int _syncRetryCount;
@@ -139,7 +139,7 @@ public sealed class PresentationModeService
 
         if (!_slideInkCache.TryGetValue(currentSlideNumber, out var strokes))
         {
-            strokes = new List<InkStroke>();
+            strokes = new List<SkiaStroke>();
             _slideInkCache[currentSlideNumber] = strokes;
         }
 
