@@ -1,7 +1,9 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using SkiaAnnotate.Controls;
 
@@ -9,11 +11,14 @@ namespace SkiaAnnotate.Windows;
 
 public partial class AnnotationOverlayWindow : Window
 {
+    private const int WmNcHitTest = 0x0084;
+    private const int HtTransparent = -1;
     private static bool _hasLastToolbarPosition;
     private static double _lastToolbarLeft;
     private static double _lastToolbarTop;
 
     private bool _toolbarCollapsed;
+    private bool _isMouseMode;
     private bool _isToolbarDragging;
     private Point _dragStartMousePoint;
     private double _dragStartLeft;
@@ -39,11 +44,18 @@ public partial class AnnotationOverlayWindow : Window
         Loaded += (_, _) =>
         {
             PlaceToolbarTopCenter();
-            SetActiveToolVisual(isPenActive: true);
+            SetActiveToolVisual(SkiaInkTool.Pen, isMouseMode: false);
             Activate();
             OverlayInkCanvas.Focus();
         };
         SizeChanged += (_, _) => EnsureToolbarInsideBounds();
+        SourceInitialized += (_, _) =>
+        {
+            if (PresentationSource.FromVisual(this) is HwndSource source)
+            {
+                source.AddHook(WndProc);
+            }
+        };
     }
 
     public event Action? NextSlideRequested;
@@ -67,16 +79,23 @@ public partial class AnnotationOverlayWindow : Window
 
     private void Pen_OnClick(object sender, RoutedEventArgs e)
     {
+        SetMouseMode(false);
         OverlayInkCanvas.Tool = SkiaInkTool.Pen;
-        SetActiveToolVisual(isPenActive: true);
+        SetActiveToolVisual(SkiaInkTool.Pen, _isMouseMode);
         OverlayInkCanvas.Focus();
     }
 
     private void Eraser_OnClick(object sender, RoutedEventArgs e)
     {
+        SetMouseMode(false);
         OverlayInkCanvas.Tool = SkiaInkTool.Eraser;
-        SetActiveToolVisual(isPenActive: false);
+        SetActiveToolVisual(SkiaInkTool.Eraser, _isMouseMode);
         OverlayInkCanvas.Focus();
+    }
+
+    private void MouseMode_OnClick(object sender, RoutedEventArgs e)
+    {
+        SetMouseMode(!_isMouseMode);
     }
 
     private void Clear_OnClick(object sender, RoutedEventArgs e) => OverlayInkCanvas.Clear();
@@ -243,16 +262,24 @@ public partial class AnnotationOverlayWindow : Window
         _hasLastToolbarPosition = true;
     }
 
-    private void SetActiveToolVisual(bool isPenActive)
+    private void SetActiveToolVisual(SkiaInkTool currentTool, bool isMouseMode)
     {
-        if (isPenActive)
+        ApplyButtonNormal(PenButton);
+        ApplyButtonNormal(EraserButton);
+        ApplyButtonNormal(MouseModeButton);
+
+        if (isMouseMode)
         {
-            ApplyButtonActive(PenButton);
-            ApplyButtonNormal(EraserButton);
+            ApplyButtonActive(MouseModeButton);
             return;
         }
 
-        ApplyButtonNormal(PenButton);
+        if (currentTool == SkiaInkTool.Pen)
+        {
+            ApplyButtonActive(PenButton);
+            return;
+        }
+
         ApplyButtonActive(EraserButton);
     }
 
@@ -268,5 +295,59 @@ public partial class AnnotationOverlayWindow : Window
         button.Background = _normalButtonBackground;
         button.BorderBrush = _normalButtonBorder;
         button.Foreground = _normalButtonForeground;
+    }
+
+    private void SetMouseMode(bool enabled)
+    {
+        _isMouseMode = enabled;
+        OverlayInkCanvas.IsHitTestVisible = !enabled;
+        OverlayInkCanvas.Cursor = enabled ? Cursors.Arrow : Cursors.Pen;
+        SetActiveToolVisual(OverlayInkCanvas.Tool, _isMouseMode);
+    }
+
+    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (!_isMouseMode || msg != WmNcHitTest)
+        {
+            return IntPtr.Zero;
+        }
+
+        var screenPoint = GetScreenPointFromLParam(lParam);
+        if (IsScreenPointInsideElement(FloatingToolbar, screenPoint) || IsScreenPointInsideElement(CollapsedExpandButton, screenPoint))
+        {
+            return IntPtr.Zero;
+        }
+
+        handled = true;
+        return new IntPtr(HtTransparent);
+    }
+
+    private static Point GetScreenPointFromLParam(IntPtr lParam)
+    {
+        var lp = unchecked((long)lParam);
+        var x = unchecked((short)(lp & 0xFFFF));
+        var y = unchecked((short)((lp >> 16) & 0xFFFF));
+        return new Point(x, y);
+    }
+
+    private static bool IsScreenPointInsideElement(FrameworkElement element, Point screenPoint)
+    {
+        if (element.Visibility != Visibility.Visible || element.ActualWidth <= 0 || element.ActualHeight <= 0)
+        {
+            return false;
+        }
+
+        Point topLeft;
+        try
+        {
+            topLeft = element.PointToScreen(new Point(0, 0));
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+
+        var rect = new Rect(topLeft.X, topLeft.Y, element.ActualWidth, element.ActualHeight);
+        return rect.Contains(screenPoint);
     }
 }
