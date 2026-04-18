@@ -46,7 +46,6 @@ public sealed class SkiaInkCanvas : SKElement
     private List<SkiaStroke> _strokes = new();
     private readonly Dictionary<int, ActiveStroke> _activeStrokes = new();
     private bool _sawPressureVariation;
-    private const float PointResampleSpacing = 0.9f;
 
     public SkiaInkTool Tool { get; set; } = SkiaInkTool.Pen;
     public Color PenColor { get; set; } = Colors.Red;
@@ -384,7 +383,11 @@ public sealed class SkiaInkCanvas : SKElement
                 Color = new SKColor(stroke.Color.R, stroke.Color.G, stroke.Color.B, stroke.Color.A)
             };
             using var path = new SKPath();
-            BuildSmoothedPath(path, stroke.Points);
+            path.MoveTo(stroke.Points[0].X, stroke.Points[0].Y);
+            for (var i = 1; i < stroke.Points.Count; i++)
+            {
+                path.LineTo(stroke.Points[i].X, stroke.Points[i].Y);
+            }
             canvas.DrawPath(path, paint);
             return;
         }
@@ -399,13 +402,10 @@ public sealed class SkiaInkCanvas : SKElement
             Color = new SKColor(stroke.Color.R, stroke.Color.G, stroke.Color.B, stroke.Color.A)
         };
 
-        // Keep variable-width by short segment interpolation, but drive geometry with
-        // midpoint-curve sampling to reduce jagged corners (Inkeys-like feel).
-        var sampledPoints = BuildSmoothedSamples(stroke.Points);
-        for (var i = 1; i < sampledPoints.Count; i++)
+        for (var i = 1; i < stroke.Points.Count; i++)
         {
-            var a = sampledPoints[i - 1];
-            var b = sampledPoints[i];
+            var a = stroke.Points[i - 1];
+            var b = stroke.Points[i];
             var wA = a.W > 0 ? a.W : stroke.Width;
             var wB = b.W > 0 ? b.W : stroke.Width;
             paintVar.StrokeWidth = (wA + wB) * 0.5f;
@@ -453,12 +453,6 @@ public sealed class SkiaInkCanvas : SKElement
         public float LastY { get; set; }
         public long LastT { get; set; }
         public float LastVelocity { get; set; }
-        public bool HasAcceptedPoint { get; set; }
-        public float LastAcceptedX { get; set; }
-        public float LastAcceptedY { get; set; }
-        public float LastAcceptedW { get; set; }
-        public float LastAcceptedP { get; set; }
-        public long LastAcceptedT { get; set; }
 
         public OneEuroFilter? FilterX { get; }
         public OneEuroFilter? FilterY { get; }
@@ -613,7 +607,14 @@ public sealed class SkiaInkCanvas : SKElement
             return;
         }
 
-        AppendResampledPoint(active, x, y, w, p, sample.TimestampMs);
+        active.Points.Add(new SkiaStrokePoint
+        {
+            X = x,
+            Y = y,
+            W = w,
+            P = p,
+            T = sample.TimestampMs
+        });
 
         active.LastX = sample.X;
         active.LastY = sample.Y;
@@ -641,132 +642,4 @@ public sealed class SkiaInkCanvas : SKElement
     }
 
     private static float Clamp(float v, float min, float max) => v < min ? min : (v > max ? max : v);
-
-    private static void BuildSmoothedPath(SKPath path, IReadOnlyList<SkiaStrokePoint> points)
-    {
-        if (points.Count == 0)
-        {
-            return;
-        }
-
-        if (points.Count == 1)
-        {
-            path.MoveTo(points[0].X, points[0].Y);
-            path.LineTo(points[0].X + 0.01f, points[0].Y + 0.01f);
-            return;
-        }
-
-        path.MoveTo(points[0].X, points[0].Y);
-        for (var i = 1; i < points.Count - 1; i++)
-        {
-            var current = points[i];
-            var next = points[i + 1];
-            var midX = (current.X + next.X) * 0.5f;
-            var midY = (current.Y + next.Y) * 0.5f;
-            path.QuadTo(current.X, current.Y, midX, midY);
-        }
-
-        var last = points[points.Count - 1];
-        path.LineTo(last.X, last.Y);
-    }
-
-    private static List<SkiaStrokePoint> BuildSmoothedSamples(IReadOnlyList<SkiaStrokePoint> points)
-    {
-        if (points.Count <= 2)
-        {
-            return points.ToList();
-        }
-
-        var result = new List<SkiaStrokePoint>(points.Count * 2);
-        result.Add(points[0]);
-        for (var i = 1; i < points.Count - 1; i++)
-        {
-            var prev = points[i - 1];
-            var current = points[i];
-            var next = points[i + 1];
-
-            var m1X = (prev.X + current.X) * 0.5f;
-            var m1Y = (prev.Y + current.Y) * 0.5f;
-            var m2X = (current.X + next.X) * 0.5f;
-            var m2Y = (current.Y + next.Y) * 0.5f;
-
-            const int segmentSamples = 3;
-            for (var s = 1; s <= segmentSamples; s++)
-            {
-                var t = s / (float)segmentSamples;
-                var omt = 1f - t;
-                var x = omt * omt * m1X + 2f * omt * t * current.X + t * t * m2X;
-                var y = omt * omt * m1Y + 2f * omt * t * current.Y + t * t * m2Y;
-                var w = current.W > 0 ? current.W : 0f;
-                result.Add(new SkiaStrokePoint
-                {
-                    X = x,
-                    Y = y,
-                    W = w,
-                    P = current.P,
-                    T = current.T
-                });
-            }
-        }
-
-        result.Add(points[points.Count - 1]);
-        return result;
-    }
-
-    private static void AppendResampledPoint(
-        ActiveStroke active,
-        float x,
-        float y,
-        float w,
-        float p,
-        long t)
-    {
-        if (!active.HasAcceptedPoint)
-        {
-            active.Points.Add(new SkiaStrokePoint { X = x, Y = y, W = w, P = p, T = t });
-            active.HasAcceptedPoint = true;
-            active.LastAcceptedX = x;
-            active.LastAcceptedY = y;
-            active.LastAcceptedW = w;
-            active.LastAcceptedP = p;
-            active.LastAcceptedT = t;
-            return;
-        }
-
-        var dx = x - active.LastAcceptedX;
-        var dy = y - active.LastAcceptedY;
-        var distance = (float)Math.Sqrt(dx * dx + dy * dy);
-        if (distance < PointResampleSpacing)
-        {
-            return;
-        }
-
-        var steps = Math.Max(1, (int)(distance / PointResampleSpacing));
-        for (var i = 1; i <= steps; i++)
-        {
-            var alpha = i / (float)steps;
-            var ix = Lerp(active.LastAcceptedX, x, alpha);
-            var iy = Lerp(active.LastAcceptedY, y, alpha);
-            var iw = Lerp(active.LastAcceptedW, w, alpha);
-            var ip = Lerp(active.LastAcceptedP, p, alpha);
-            var it = (long)Lerp(active.LastAcceptedT, t, alpha);
-            active.Points.Add(new SkiaStrokePoint
-            {
-                X = ix,
-                Y = iy,
-                W = iw,
-                P = ip,
-                T = it
-            });
-        }
-
-        active.LastAcceptedX = x;
-        active.LastAcceptedY = y;
-        active.LastAcceptedW = w;
-        active.LastAcceptedP = p;
-        active.LastAcceptedT = t;
-    }
-
-    private static float Lerp(float a, float b, float t) => a + (b - a) * t;
-    private static double Lerp(long a, long b, float t) => a + (b - a) * t;
 }
