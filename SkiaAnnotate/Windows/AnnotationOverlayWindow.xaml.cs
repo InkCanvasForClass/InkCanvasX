@@ -238,10 +238,9 @@ public partial class AnnotationOverlayWindow : Window
             return;
         }
 
-        // ICC-CE 风格：初始靠近底部中间，避免遮挡页面主内容。
+        // 默认靠近顶部中间，减少对页面主体内容的遮挡。
         var left = Math.Max(16, ActualWidth * 0.56 - FloatingToolbar.Width / 2);
-        var estimatedHeight = 42d;
-        var top = Math.Max(8, ActualHeight - estimatedHeight - 26);
+        var top = 14d;
         Canvas.SetLeft(FloatingToolbar, left);
         Canvas.SetTop(FloatingToolbar, top);
         Canvas.SetLeft(CollapsedExpandButton, left + ExpandedToolbarWidth - 30);

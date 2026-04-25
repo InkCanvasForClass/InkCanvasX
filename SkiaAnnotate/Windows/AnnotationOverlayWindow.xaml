@@ -110,26 +110,27 @@
         <Canvas x:Name="ToolbarHost" IsHitTestVisible="True">
             <Border x:Name="FloatingToolbar"
                     Width="560"
-                    Height="50"
-                    Background="#E5E7EB"
+                    Height="44"
+                    Background="#EEF3F7FB"
                     BorderBrush="#C7CBD1"
                     BorderThickness="1"
                     CornerRadius="8"
+                    Opacity="0.96"
                     MouseLeftButtonDown="FloatingToolbar_OnMouseLeftButtonDown">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="12" ShadowDepth="0" Opacity="0.15" Color="Black" />
                 </Border.Effect>
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="48" />
+                        <ColumnDefinition Width="44" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
                     <Border DockPanel.Dock="Left"
                             Grid.Column="0"
-                            Width="48"
-                            Height="50"
-                            Background="#E5E7EB"
+                            Width="44"
+                            Height="44"
+                            Background="#E8EDF3"
                             BorderBrush="#C7CBD1"
                             BorderThickness="0,0,1,0"
                             CornerRadius="8,0,0,8"
@@ -147,7 +148,7 @@
                     <StackPanel x:Name="ToolbarButtonPanel"
                                 Grid.Column="1"
                                 Orientation="Horizontal"
-                                Margin="6,5">
+                                Margin="6,2">
                         <Button Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE100;" Click="PreviousSlide_OnClick" ToolTip="上一页" />
                         <Button Style="{StaticResource IconToolbarButtonStyle}" Content="&#xE101;" Click="NextSlide_OnClick" ToolTip="下一页" />
                         <Border Width="1" Height="24" Margin="4,0" Background="#CED3DA" VerticalAlignment="Center" />
