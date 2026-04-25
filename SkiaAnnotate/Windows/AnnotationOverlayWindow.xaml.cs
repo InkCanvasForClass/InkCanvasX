@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -21,21 +19,18 @@ public partial class AnnotationOverlayWindow : Window
     private bool _toolbarCollapsed;
     private bool _isMouseMode;
     private bool _isToolbarDragging;
-    private bool _isToolbarHovered;
     private Point _dragStartMousePoint;
     private double _dragStartLeft;
     private double _dragStartTop;
-    private const double ExpandedToolbarWidth = 560;
+    private const double ExpandedToolbarWidth = 620;
     private const double CollapsedToolbarWidth = 46;
-    private readonly Brush _activeButtonBackground = new SolidColorBrush(Color.FromRgb(47, 109, 246));
-    private readonly Brush _activeButtonBorder = new SolidColorBrush(Color.FromRgb(29, 78, 216));
+    private readonly Brush _activeButtonBackground = new SolidColorBrush(Color.FromRgb(58, 122, 254));
+    private readonly Brush _activeButtonBorder = new SolidColorBrush(Color.FromRgb(45, 103, 215));
     private readonly Brush _activeButtonForeground = Brushes.White;
-    private readonly Brush _normalButtonBackground = new SolidColorBrush(Color.FromRgb(229, 231, 235));
-    private readonly Brush _normalButtonBorder = Brushes.Transparent;
-    private readonly Brush _normalButtonForeground = new SolidColorBrush(Color.FromRgb(39, 39, 42));
+    private readonly Brush _normalButtonBackground = new SolidColorBrush(Color.FromRgb(250, 250, 250));
+    private readonly Brush _normalButtonBorder = new SolidColorBrush(Color.FromRgb(213, 213, 213));
+    private readonly Brush _normalButtonForeground = new SolidColorBrush(Color.FromRgb(31, 31, 31));
     private HwndSource? _hwndSource;
-    private const double ToolbarDimOpacity = 0.72;
-    private const double ToolbarActiveOpacity = 0.96;
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool bRedraw);
@@ -54,15 +49,14 @@ public partial class AnnotationOverlayWindow : Window
         InitializeComponent();
 
         OverlayInkCanvas.IsHitTestVisible = true;
-        OverlayInkCanvas.Tool = CanvasInkTool.Pen;
+        OverlayInkCanvas.Tool = SkiaInkTool.Pen;
         OverlayInkCanvas.PenColor = Colors.Red;
         OverlayInkCanvas.PenWidth = 4f;
 
         Loaded += (_, _) =>
         {
             PlaceToolbarTopCenter();
-            SetActiveToolVisual(CanvasInkTool.Pen, isMouseMode: false);
-            UpdateToolbarOpacity();
+            SetActiveToolVisual(SkiaInkTool.Pen, isMouseMode: false);
             Activate();
             OverlayInkCanvas.Focus();
         };
@@ -81,15 +75,15 @@ public partial class AnnotationOverlayWindow : Window
     public event Action? PreviousSlideRequested;
     public event Action? ExitRequested;
 
-    public StrokeCollection GetCurrentStrokesSnapshot()
+    public List<SkiaStroke> GetCurrentStrokesSnapshot()
     {
         OverlayInkCanvas.CommitActiveStroke();
-        return OverlayInkCanvas.GetBoundStrokes().Clone();
+        return OverlayInkCanvas.GetBoundStrokes();
     }
 
-    public void SetCurrentStrokes(StrokeCollection strokes)
+    public void SetCurrentStrokes(List<SkiaStroke> strokes)
     {
-        OverlayInkCanvas.BindStrokes(strokes.Clone());
+        OverlayInkCanvas.BindStrokes(strokes);
     }
 
     private void PreviousSlide_OnClick(object sender, RoutedEventArgs e) => PreviousSlideRequested?.Invoke();
@@ -99,16 +93,16 @@ public partial class AnnotationOverlayWindow : Window
     private void Pen_OnClick(object sender, RoutedEventArgs e)
     {
         SetMouseMode(false);
-        OverlayInkCanvas.Tool = CanvasInkTool.Pen;
-        SetActiveToolVisual(CanvasInkTool.Pen, _isMouseMode);
+        OverlayInkCanvas.Tool = SkiaInkTool.Pen;
+        SetActiveToolVisual(SkiaInkTool.Pen, _isMouseMode);
         OverlayInkCanvas.Focus();
     }
 
     private void Eraser_OnClick(object sender, RoutedEventArgs e)
     {
         SetMouseMode(false);
-        OverlayInkCanvas.Tool = CanvasInkTool.Eraser;
-        SetActiveToolVisual(CanvasInkTool.Eraser, _isMouseMode);
+        OverlayInkCanvas.Tool = SkiaInkTool.Eraser;
+        SetActiveToolVisual(SkiaInkTool.Eraser, _isMouseMode);
         OverlayInkCanvas.Focus();
     }
 
@@ -199,18 +193,6 @@ public partial class AnnotationOverlayWindow : Window
         }
     }
 
-    private void FloatingToolbar_OnMouseEnter(object sender, MouseEventArgs e)
-    {
-        _isToolbarHovered = true;
-        UpdateToolbarOpacity();
-    }
-
-    private void FloatingToolbar_OnMouseLeave(object sender, MouseEventArgs e)
-    {
-        _isToolbarHovered = false;
-        UpdateToolbarOpacity();
-    }
-
     private void Exit_OnClick(object sender, RoutedEventArgs e) => ExitRequested?.Invoke();
 
     protected override void OnKeyDown(KeyEventArgs e)
@@ -254,9 +236,10 @@ public partial class AnnotationOverlayWindow : Window
             return;
         }
 
-        // 默认靠近右上边缘，尽量避开页面主体内容区域。
-        var left = Math.Max(8, ActualWidth - FloatingToolbar.Width - 20);
-        var top = 14d;
+        // ICC-CE 风格：初始靠近底部中间，避免遮挡页面主内容。
+        var left = Math.Max(16, ActualWidth * 0.56 - FloatingToolbar.Width / 2);
+        var estimatedHeight = 42d;
+        var top = Math.Max(8, ActualHeight - estimatedHeight - 26);
         Canvas.SetLeft(FloatingToolbar, left);
         Canvas.SetTop(FloatingToolbar, top);
         Canvas.SetLeft(CollapsedExpandButton, left + ExpandedToolbarWidth - 30);
@@ -297,11 +280,9 @@ public partial class AnnotationOverlayWindow : Window
         {
             ApplyMouseModeHitRegion();
         }
-
-        UpdateToolbarOpacity();
     }
 
-    private void SetActiveToolVisual(CanvasInkTool currentTool, bool isMouseMode)
+    private void SetActiveToolVisual(SkiaInkTool currentTool, bool isMouseMode)
     {
         ApplyButtonNormal(PenButton);
         ApplyButtonNormal(EraserButton);
@@ -313,7 +294,7 @@ public partial class AnnotationOverlayWindow : Window
             return;
         }
 
-        if (currentTool == CanvasInkTool.Pen)
+        if (currentTool == SkiaInkTool.Pen)
         {
             ApplyButtonActive(PenButton);
             return;
@@ -342,21 +323,7 @@ public partial class AnnotationOverlayWindow : Window
         OverlayInkCanvas.IsHitTestVisible = !enabled;
         OverlayInkCanvas.Cursor = enabled ? Cursors.Arrow : Cursors.Pen;
         SetActiveToolVisual(OverlayInkCanvas.Tool, _isMouseMode);
-        UpdateToolbarOpacity();
         ApplyMouseModeHitRegion();
-    }
-
-    private void UpdateToolbarOpacity()
-    {
-        if (_toolbarCollapsed)
-        {
-            FloatingToolbar.Opacity = ToolbarActiveOpacity;
-            return;
-        }
-
-        FloatingToolbar.Opacity = _isToolbarHovered || !_isMouseMode
-            ? ToolbarActiveOpacity
-            : ToolbarDimOpacity;
     }
 
     private void ApplyMouseModeHitRegion()
