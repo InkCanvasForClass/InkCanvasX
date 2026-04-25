@@ -52,6 +52,7 @@ public partial class AnnotationOverlayWindow : Window
         OverlayInkCanvas.Tool = SkiaInkTool.Pen;
         OverlayInkCanvas.PenColor = Colors.Red;
         OverlayInkCanvas.PenWidth = 4f;
+        OverlayInkCanvas.SmoothingEnabled = true;
 
         Loaded += (_, _) =>
         {

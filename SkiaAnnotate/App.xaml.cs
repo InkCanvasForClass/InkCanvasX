@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 using SkiaAnnotate.Services;
 using SkiaAnnotate.ViewModels;
@@ -7,6 +8,12 @@ namespace SkiaAnnotate;
 public partial class App : Application
 {
     private AnnotateViewModel? _backgroundViewModel;
+
+    static App()
+    {
+        // Use the modern Pointer pipeline for stylus input to improve WPF ink stability/smoothing.
+        AppContext.SetSwitch("Switch.System.Windows.Input.Stylus.EnablePointerSupport", true);
+    }
 
     protected override void OnStartup(StartupEventArgs e)
     {
