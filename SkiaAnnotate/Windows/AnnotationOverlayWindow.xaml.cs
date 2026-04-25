@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -22,7 +24,7 @@ public partial class AnnotationOverlayWindow : Window
     private Point _dragStartMousePoint;
     private double _dragStartLeft;
     private double _dragStartTop;
-    private const double ExpandedToolbarWidth = 620;
+    private const double ExpandedToolbarWidth = 460;
     private const double CollapsedToolbarWidth = 46;
     private readonly Brush _activeButtonBackground = new SolidColorBrush(Color.FromRgb(58, 122, 254));
     private readonly Brush _activeButtonBorder = new SolidColorBrush(Color.FromRgb(45, 103, 215));
@@ -49,14 +51,14 @@ public partial class AnnotationOverlayWindow : Window
         InitializeComponent();
 
         OverlayInkCanvas.IsHitTestVisible = true;
-        OverlayInkCanvas.Tool = SkiaInkTool.Pen;
+        OverlayInkCanvas.Tool = CanvasInkTool.Pen;
         OverlayInkCanvas.PenColor = Colors.Red;
         OverlayInkCanvas.PenWidth = 4f;
 
         Loaded += (_, _) =>
         {
             PlaceToolbarTopCenter();
-            SetActiveToolVisual(SkiaInkTool.Pen, isMouseMode: false);
+            SetActiveToolVisual(CanvasInkTool.Pen, isMouseMode: false);
             Activate();
             OverlayInkCanvas.Focus();
         };
@@ -75,15 +77,15 @@ public partial class AnnotationOverlayWindow : Window
     public event Action? PreviousSlideRequested;
     public event Action? ExitRequested;
 
-    public List<SkiaStroke> GetCurrentStrokesSnapshot()
+    public StrokeCollection GetCurrentStrokesSnapshot()
     {
         OverlayInkCanvas.CommitActiveStroke();
-        return OverlayInkCanvas.GetBoundStrokes();
+        return OverlayInkCanvas.GetBoundStrokes().Clone();
     }
 
-    public void SetCurrentStrokes(List<SkiaStroke> strokes)
+    public void SetCurrentStrokes(StrokeCollection strokes)
     {
-        OverlayInkCanvas.BindStrokes(strokes);
+        OverlayInkCanvas.BindStrokes(strokes.Clone());
     }
 
     private void PreviousSlide_OnClick(object sender, RoutedEventArgs e) => PreviousSlideRequested?.Invoke();
@@ -93,16 +95,16 @@ public partial class AnnotationOverlayWindow : Window
     private void Pen_OnClick(object sender, RoutedEventArgs e)
     {
         SetMouseMode(false);
-        OverlayInkCanvas.Tool = SkiaInkTool.Pen;
-        SetActiveToolVisual(SkiaInkTool.Pen, _isMouseMode);
+        OverlayInkCanvas.Tool = CanvasInkTool.Pen;
+        SetActiveToolVisual(CanvasInkTool.Pen, _isMouseMode);
         OverlayInkCanvas.Focus();
     }
 
     private void Eraser_OnClick(object sender, RoutedEventArgs e)
     {
         SetMouseMode(false);
-        OverlayInkCanvas.Tool = SkiaInkTool.Eraser;
-        SetActiveToolVisual(SkiaInkTool.Eraser, _isMouseMode);
+        OverlayInkCanvas.Tool = CanvasInkTool.Eraser;
+        SetActiveToolVisual(CanvasInkTool.Eraser, _isMouseMode);
         OverlayInkCanvas.Focus();
     }
 
@@ -282,7 +284,7 @@ public partial class AnnotationOverlayWindow : Window
         }
     }
 
-    private void SetActiveToolVisual(SkiaInkTool currentTool, bool isMouseMode)
+    private void SetActiveToolVisual(CanvasInkTool currentTool, bool isMouseMode)
     {
         ApplyButtonNormal(PenButton);
         ApplyButtonNormal(EraserButton);
@@ -294,7 +296,7 @@ public partial class AnnotationOverlayWindow : Window
             return;
         }
 
-        if (currentTool == SkiaInkTool.Pen)
+        if (currentTool == CanvasInkTool.Pen)
         {
             ApplyButtonActive(PenButton);
             return;
