@@ -24,14 +24,14 @@ public partial class AnnotationOverlayWindow : Window
     private Point _dragStartMousePoint;
     private double _dragStartLeft;
     private double _dragStartTop;
-    private const double ExpandedToolbarWidth = 460;
+    private const double ExpandedToolbarWidth = 560;
     private const double CollapsedToolbarWidth = 46;
-    private readonly Brush _activeButtonBackground = new SolidColorBrush(Color.FromRgb(58, 122, 254));
-    private readonly Brush _activeButtonBorder = new SolidColorBrush(Color.FromRgb(45, 103, 215));
+    private readonly Brush _activeButtonBackground = new SolidColorBrush(Color.FromRgb(47, 109, 246));
+    private readonly Brush _activeButtonBorder = new SolidColorBrush(Color.FromRgb(29, 78, 216));
     private readonly Brush _activeButtonForeground = Brushes.White;
-    private readonly Brush _normalButtonBackground = new SolidColorBrush(Color.FromRgb(250, 250, 250));
-    private readonly Brush _normalButtonBorder = new SolidColorBrush(Color.FromRgb(213, 213, 213));
-    private readonly Brush _normalButtonForeground = new SolidColorBrush(Color.FromRgb(31, 31, 31));
+    private readonly Brush _normalButtonBackground = new SolidColorBrush(Color.FromRgb(229, 231, 235));
+    private readonly Brush _normalButtonBorder = Brushes.Transparent;
+    private readonly Brush _normalButtonForeground = new SolidColorBrush(Color.FromRgb(39, 39, 42));
     private HwndSource? _hwndSource;
 
     [DllImport("user32.dll", SetLastError = true)]
