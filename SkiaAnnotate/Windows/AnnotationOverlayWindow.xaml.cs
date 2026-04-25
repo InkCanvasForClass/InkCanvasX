@@ -21,6 +21,7 @@ public partial class AnnotationOverlayWindow : Window
     private bool _toolbarCollapsed;
     private bool _isMouseMode;
     private bool _isToolbarDragging;
+    private bool _isToolbarHovered;
     private Point _dragStartMousePoint;
     private double _dragStartLeft;
     private double _dragStartTop;
@@ -33,6 +34,8 @@ public partial class AnnotationOverlayWindow : Window
     private readonly Brush _normalButtonBorder = Brushes.Transparent;
     private readonly Brush _normalButtonForeground = new SolidColorBrush(Color.FromRgb(39, 39, 42));
     private HwndSource? _hwndSource;
+    private const double ToolbarDimOpacity = 0.72;
+    private const double ToolbarActiveOpacity = 0.96;
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool bRedraw);
@@ -59,6 +62,7 @@ public partial class AnnotationOverlayWindow : Window
         {
             PlaceToolbarTopCenter();
             SetActiveToolVisual(CanvasInkTool.Pen, isMouseMode: false);
+            UpdateToolbarOpacity();
             Activate();
             OverlayInkCanvas.Focus();
         };
@@ -195,6 +199,18 @@ public partial class AnnotationOverlayWindow : Window
         }
     }
 
+    private void FloatingToolbar_OnMouseEnter(object sender, MouseEventArgs e)
+    {
+        _isToolbarHovered = true;
+        UpdateToolbarOpacity();
+    }
+
+    private void FloatingToolbar_OnMouseLeave(object sender, MouseEventArgs e)
+    {
+        _isToolbarHovered = false;
+        UpdateToolbarOpacity();
+    }
+
     private void Exit_OnClick(object sender, RoutedEventArgs e) => ExitRequested?.Invoke();
 
     protected override void OnKeyDown(KeyEventArgs e)
@@ -238,8 +254,8 @@ public partial class AnnotationOverlayWindow : Window
             return;
         }
 
-        // 默认靠近顶部中间，减少对页面主体内容的遮挡。
-        var left = Math.Max(16, ActualWidth * 0.56 - FloatingToolbar.Width / 2);
+        // 默认靠近右上边缘，尽量避开页面主体内容区域。
+        var left = Math.Max(8, ActualWidth - FloatingToolbar.Width - 20);
         var top = 14d;
         Canvas.SetLeft(FloatingToolbar, left);
         Canvas.SetTop(FloatingToolbar, top);
@@ -281,6 +297,8 @@ public partial class AnnotationOverlayWindow : Window
         {
             ApplyMouseModeHitRegion();
         }
+
+        UpdateToolbarOpacity();
     }
 
     private void SetActiveToolVisual(CanvasInkTool currentTool, bool isMouseMode)
@@ -324,7 +342,21 @@ public partial class AnnotationOverlayWindow : Window
         OverlayInkCanvas.IsHitTestVisible = !enabled;
         OverlayInkCanvas.Cursor = enabled ? Cursors.Arrow : Cursors.Pen;
         SetActiveToolVisual(OverlayInkCanvas.Tool, _isMouseMode);
+        UpdateToolbarOpacity();
         ApplyMouseModeHitRegion();
+    }
+
+    private void UpdateToolbarOpacity()
+    {
+        if (_toolbarCollapsed)
+        {
+            FloatingToolbar.Opacity = ToolbarActiveOpacity;
+            return;
+        }
+
+        FloatingToolbar.Opacity = _isToolbarHovered || !_isMouseMode
+            ? ToolbarActiveOpacity
+            : ToolbarDimOpacity;
     }
 
     private void ApplyMouseModeHitRegion()
