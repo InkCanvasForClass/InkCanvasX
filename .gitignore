@@ -454,3 +454,4 @@ FodyWeavers.xsd
 # Telemetry DSN configuration file (contains sensitive information)
 telemetry_dsn.txt
 **/telemetry_dsn.txt
+/.claude
