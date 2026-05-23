@@ -1,13 +1,11 @@
 using System;
-using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using Jalium.UI.Controls.Ink;
-using WpfButton = System.Windows.Controls.Button;
-using WpfInkCanvasEditingMode = System.Windows.Controls.InkCanvasEditingMode;
-using WpfInkCanvas = System.Windows.Controls.InkCanvas;
+using SkiaAnnotate.Controls;
 
 namespace SkiaAnnotate.Windows;
 
@@ -34,28 +32,32 @@ public partial class AnnotationOverlayWindow : Window
     private readonly Brush _normalButtonForeground = new SolidColorBrush(Color.FromRgb(31, 31, 31));
     private HwndSource? _hwndSource;
 
-    [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+    [DllImport("user32.dll", SetLastError = true)]
     private static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool bRedraw);
 
-    [System.Runtime.InteropServices.DllImport("gdi32.dll", SetLastError = true)]
+    [DllImport("gdi32.dll", SetLastError = true)]
     private static extern IntPtr CreateRectRgn(int left, int top, int right, int bottom);
 
-    [System.Runtime.InteropServices.DllImport("gdi32.dll", SetLastError = true)]
+    [DllImport("gdi32.dll", SetLastError = true)]
     private static extern int CombineRgn(IntPtr hrgnDest, IntPtr hrgnSrc1, IntPtr hrgnSrc2, int fnCombineMode);
 
-    [System.Runtime.InteropServices.DllImport("gdi32.dll", SetLastError = true)]
+    [DllImport("gdi32.dll", SetLastError = true)]
     private static extern bool DeleteObject(IntPtr hObject);
 
     public AnnotationOverlayWindow()
     {
         InitializeComponent();
 
-        ConfigureInkCanvas();
+        OverlayInkCanvas.IsHitTestVisible = true;
+        OverlayInkCanvas.Tool = SkiaInkTool.Pen;
+        OverlayInkCanvas.PenColor = Colors.Red;
+        OverlayInkCanvas.PenWidth = 4f;
+        OverlayInkCanvas.SmoothingEnabled = true;
 
         Loaded += (_, _) =>
         {
             PlaceToolbarTopCenter();
-            SetActiveToolVisual(WpfInkCanvasEditingMode.Ink, isMouseMode: false);
+            SetActiveToolVisual(SkiaInkTool.Pen, isMouseMode: false);
             Activate();
             OverlayInkCanvas.Focus();
         };
@@ -74,25 +76,15 @@ public partial class AnnotationOverlayWindow : Window
     public event Action? PreviousSlideRequested;
     public event Action? ExitRequested;
 
-    public StrokeCollection GetCurrentStrokesSnapshot() => OverlayInkCanvas.Strokes.Clone();
-
-    public void SetCurrentStrokes(StrokeCollection strokes)
+    public List<SkiaStroke> GetCurrentStrokesSnapshot()
     {
-        OverlayInkCanvas.Strokes = strokes.Clone();
+        OverlayInkCanvas.CommitActiveStroke();
+        return OverlayInkCanvas.GetBoundStrokes();
     }
 
-    private void ConfigureInkCanvas()
+    public void SetCurrentStrokes(List<SkiaStroke> strokes)
     {
-        OverlayInkCanvas.IsHitTestVisible = true;
-        OverlayInkCanvas.EditingMode = WpfInkCanvasEditingMode.Ink;
-        OverlayInkCanvas.DefaultDrawingAttributes = new System.Windows.Ink.DrawingAttributes
-        {
-            Color = Colors.Red,
-            Width = 4,
-            Height = 4,
-            FitToCurve = true,
-            IgnorePressure = false
-        };
+        OverlayInkCanvas.BindStrokes(strokes);
     }
 
     private void PreviousSlide_OnClick(object sender, RoutedEventArgs e) => PreviousSlideRequested?.Invoke();
@@ -102,16 +94,16 @@ public partial class AnnotationOverlayWindow : Window
     private void Pen_OnClick(object sender, RoutedEventArgs e)
     {
         SetMouseMode(false);
-        OverlayInkCanvas.EditingMode = WpfInkCanvasEditingMode.Ink;
-        SetActiveToolVisual(WpfInkCanvasEditingMode.Ink, _isMouseMode);
+        OverlayInkCanvas.Tool = SkiaInkTool.Pen;
+        SetActiveToolVisual(SkiaInkTool.Pen, _isMouseMode);
         OverlayInkCanvas.Focus();
     }
 
     private void Eraser_OnClick(object sender, RoutedEventArgs e)
     {
         SetMouseMode(false);
-        OverlayInkCanvas.EditingMode = WpfInkCanvasEditingMode.EraseByStroke;
-        SetActiveToolVisual(WpfInkCanvasEditingMode.EraseByStroke, _isMouseMode);
+        OverlayInkCanvas.Tool = SkiaInkTool.Eraser;
+        SetActiveToolVisual(SkiaInkTool.Eraser, _isMouseMode);
         OverlayInkCanvas.Focus();
     }
 
@@ -120,7 +112,7 @@ public partial class AnnotationOverlayWindow : Window
         SetMouseMode(!_isMouseMode);
     }
 
-    private void Clear_OnClick(object sender, RoutedEventArgs e) => OverlayInkCanvas.Strokes.Clear();
+    private void Clear_OnClick(object sender, RoutedEventArgs e) => OverlayInkCanvas.Clear();
 
     private void ToggleToolbar_OnClick(object sender, RoutedEventArgs e)
     {
@@ -129,7 +121,7 @@ public partial class AnnotationOverlayWindow : Window
         ToolbarButtonPanel.Visibility = _toolbarCollapsed ? Visibility.Collapsed : Visibility.Visible;
         FloatingToolbar.Visibility = _toolbarCollapsed ? Visibility.Collapsed : Visibility.Visible;
         CollapsedExpandButton.Visibility = _toolbarCollapsed ? Visibility.Visible : Visibility.Collapsed;
-        ToggleButton.Content = _toolbarCollapsed ? "" : "";
+        ToggleButton.Content = _toolbarCollapsed ? "\uE76B" : "\uE76C";
         EnsureToolbarInsideBounds();
         ApplyMouseModeHitRegion();
     }
@@ -146,7 +138,7 @@ public partial class AnnotationOverlayWindow : Window
         FloatingToolbar.Visibility = Visibility.Visible;
         ToolbarButtonPanel.Visibility = Visibility.Visible;
         CollapsedExpandButton.Visibility = Visibility.Collapsed;
-        ToggleButton.Content = "";
+        ToggleButton.Content = "\uE76C";
         EnsureToolbarInsideBounds();
         ApplyMouseModeHitRegion();
     }
@@ -162,8 +154,8 @@ public partial class AnnotationOverlayWindow : Window
 
         _isToolbarDragging = true;
         _dragStartMousePoint = e.GetPosition(this);
-        _dragStartLeft = System.Windows.Controls.Canvas.GetLeft(FloatingToolbar);
-        _dragStartTop = System.Windows.Controls.Canvas.GetTop(FloatingToolbar);
+        _dragStartLeft = Canvas.GetLeft(FloatingToolbar);
+        _dragStartTop = Canvas.GetTop(FloatingToolbar);
         Mouse.Capture((IInputElement)sender);
         e.Handled = true;
     }
@@ -178,8 +170,8 @@ public partial class AnnotationOverlayWindow : Window
         var currentPoint = e.GetPosition(this);
         var deltaX = currentPoint.X - _dragStartMousePoint.X;
         var deltaY = currentPoint.Y - _dragStartMousePoint.Y;
-        System.Windows.Controls.Canvas.SetLeft(FloatingToolbar, _dragStartLeft + deltaX);
-        System.Windows.Controls.Canvas.SetTop(FloatingToolbar, _dragStartTop + deltaY);
+        Canvas.SetLeft(FloatingToolbar, _dragStartLeft + deltaX);
+        Canvas.SetTop(FloatingToolbar, _dragStartTop + deltaY);
         EnsureToolbarInsideBounds();
     }
 
@@ -187,8 +179,8 @@ public partial class AnnotationOverlayWindow : Window
     {
         _isToolbarDragging = false;
         Mouse.Capture(null);
-        _lastToolbarLeft = System.Windows.Controls.Canvas.GetLeft(FloatingToolbar);
-        _lastToolbarTop = System.Windows.Controls.Canvas.GetTop(FloatingToolbar);
+        _lastToolbarLeft = Canvas.GetLeft(FloatingToolbar);
+        _lastToolbarTop = Canvas.GetTop(FloatingToolbar);
         _hasLastToolbarPosition = true;
         ApplyMouseModeHitRegion();
         e.Handled = true;
@@ -235,23 +227,24 @@ public partial class AnnotationOverlayWindow : Window
         FloatingToolbar.Visibility = _toolbarCollapsed ? Visibility.Collapsed : Visibility.Visible;
         ToolbarButtonPanel.Visibility = _toolbarCollapsed ? Visibility.Collapsed : Visibility.Visible;
         CollapsedExpandButton.Visibility = _toolbarCollapsed ? Visibility.Visible : Visibility.Collapsed;
-        ToggleButton.Content = _toolbarCollapsed ? "" : "";
+        ToggleButton.Content = _toolbarCollapsed ? "\uE76B" : "\uE76C";
 
         if (_hasLastToolbarPosition)
         {
-            System.Windows.Controls.Canvas.SetLeft(FloatingToolbar, _lastToolbarLeft);
-            System.Windows.Controls.Canvas.SetTop(FloatingToolbar, _lastToolbarTop);
+            Canvas.SetLeft(FloatingToolbar, _lastToolbarLeft);
+            Canvas.SetTop(FloatingToolbar, _lastToolbarTop);
             EnsureToolbarInsideBounds();
             return;
         }
 
+        // ICC-CE 风格：初始靠近底部中间，避免遮挡页面主内容。
         var left = Math.Max(16, ActualWidth * 0.56 - FloatingToolbar.Width / 2);
         var estimatedHeight = 42d;
         var top = Math.Max(8, ActualHeight - estimatedHeight - 26);
-        System.Windows.Controls.Canvas.SetLeft(FloatingToolbar, left);
-        System.Windows.Controls.Canvas.SetTop(FloatingToolbar, top);
-        System.Windows.Controls.Canvas.SetLeft(CollapsedExpandButton, left + ExpandedToolbarWidth - 30);
-        System.Windows.Controls.Canvas.SetTop(CollapsedExpandButton, top + 6);
+        Canvas.SetLeft(FloatingToolbar, left);
+        Canvas.SetTop(FloatingToolbar, top);
+        Canvas.SetLeft(CollapsedExpandButton, left + ExpandedToolbarWidth - 30);
+        Canvas.SetTop(CollapsedExpandButton, top + 6);
     }
 
     private void EnsureToolbarInsideBounds()
@@ -261,8 +254,8 @@ public partial class AnnotationOverlayWindow : Window
             return;
         }
 
-        var left = System.Windows.Controls.Canvas.GetLeft(FloatingToolbar);
-        var top = System.Windows.Controls.Canvas.GetTop(FloatingToolbar);
+        var left = Canvas.GetLeft(FloatingToolbar);
+        var top = Canvas.GetTop(FloatingToolbar);
         if (double.IsNaN(left))
         {
             left = 0;
@@ -277,10 +270,10 @@ public partial class AnnotationOverlayWindow : Window
         var maxTop = Math.Max(0, ActualHeight - FloatingToolbar.ActualHeight - 8);
         left = Math.Clamp(left, 8, maxLeft);
         top = Math.Clamp(top, 8, maxTop);
-        System.Windows.Controls.Canvas.SetLeft(FloatingToolbar, left);
-        System.Windows.Controls.Canvas.SetTop(FloatingToolbar, top);
-        System.Windows.Controls.Canvas.SetLeft(CollapsedExpandButton, left + Math.Max(0, FloatingToolbar.Width - 34));
-        System.Windows.Controls.Canvas.SetTop(CollapsedExpandButton, top + 4);
+        Canvas.SetLeft(FloatingToolbar, left);
+        Canvas.SetTop(FloatingToolbar, top);
+        Canvas.SetLeft(CollapsedExpandButton, left + Math.Max(0, FloatingToolbar.Width - 34));
+        Canvas.SetTop(CollapsedExpandButton, top + 4);
         _lastToolbarLeft = left;
         _lastToolbarTop = top;
         _hasLastToolbarPosition = true;
@@ -290,7 +283,7 @@ public partial class AnnotationOverlayWindow : Window
         }
     }
 
-    private void SetActiveToolVisual(WpfInkCanvasEditingMode currentTool, bool isMouseMode)
+    private void SetActiveToolVisual(SkiaInkTool currentTool, bool isMouseMode)
     {
         ApplyButtonNormal(PenButton);
         ApplyButtonNormal(EraserButton);
@@ -302,7 +295,7 @@ public partial class AnnotationOverlayWindow : Window
             return;
         }
 
-        if (currentTool == WpfInkCanvasEditingMode.Ink)
+        if (currentTool == SkiaInkTool.Pen)
         {
             ApplyButtonActive(PenButton);
             return;
@@ -311,14 +304,14 @@ public partial class AnnotationOverlayWindow : Window
         ApplyButtonActive(EraserButton);
     }
 
-    private void ApplyButtonActive(WpfButton button)
+    private void ApplyButtonActive(Button button)
     {
         button.Background = _activeButtonBackground;
         button.BorderBrush = _activeButtonBorder;
         button.Foreground = _activeButtonForeground;
     }
 
-    private void ApplyButtonNormal(WpfButton button)
+    private void ApplyButtonNormal(Button button)
     {
         button.Background = _normalButtonBackground;
         button.BorderBrush = _normalButtonBorder;
@@ -330,7 +323,7 @@ public partial class AnnotationOverlayWindow : Window
         _isMouseMode = enabled;
         OverlayInkCanvas.IsHitTestVisible = !enabled;
         OverlayInkCanvas.Cursor = enabled ? Cursors.Arrow : Cursors.Pen;
-        SetActiveToolVisual(OverlayInkCanvas.EditingMode, _isMouseMode);
+        SetActiveToolVisual(OverlayInkCanvas.Tool, _isMouseMode);
         ApplyMouseModeHitRegion();
     }
 
@@ -349,14 +342,17 @@ public partial class AnnotationOverlayWindow : Window
 
         if (!_isMouseMode)
         {
+            // Remove custom region: whole window receives hit test.
             SetWindowRgn(hwnd, IntPtr.Zero, true);
             return;
         }
 
+        // Ensure ActualWidth/ActualHeight are up-to-date before building region.
         UpdateLayout();
 
-        var toolbarLeft = System.Windows.Controls.Canvas.GetLeft(FloatingToolbar);
-        var toolbarTop = System.Windows.Controls.Canvas.GetTop(FloatingToolbar);
+        // Mouse mode: only toolbar region remains hit-testable, rest will click-through.
+        var toolbarLeft = Canvas.GetLeft(FloatingToolbar);
+        var toolbarTop = Canvas.GetTop(FloatingToolbar);
         if (double.IsNaN(toolbarLeft) || double.IsNaN(toolbarTop))
         {
             return;
@@ -369,14 +365,15 @@ public partial class AnnotationOverlayWindow : Window
         var region = CreateRectRgn(mainRect.left, mainRect.top, mainRect.right, mainRect.bottom);
         if (region == IntPtr.Zero)
         {
+            // Safety fallback: don't break UI hit area.
             SetWindowRgn(hwnd, IntPtr.Zero, true);
             return;
         }
 
         if (CollapsedExpandButton.Visibility == Visibility.Visible)
         {
-            var cx = System.Windows.Controls.Canvas.GetLeft(CollapsedExpandButton);
-            var cy = System.Windows.Controls.Canvas.GetTop(CollapsedExpandButton);
+            var cx = Canvas.GetLeft(CollapsedExpandButton);
+            var cy = Canvas.GetTop(CollapsedExpandButton);
             var cw = Math.Max(1d, CollapsedExpandButton.ActualWidth > 0 ? CollapsedExpandButton.ActualWidth : CollapsedExpandButton.Width);
             var ch = Math.Max(1d, CollapsedExpandButton.ActualHeight > 0 ? CollapsedExpandButton.ActualHeight : CollapsedExpandButton.Height);
             var collapsedRect = DipRectToPixelRect(new Rect(cx, cy, cw, ch));
@@ -392,6 +389,7 @@ public partial class AnnotationOverlayWindow : Window
             }
         }
 
+        // After successful call, system owns region handle; on failure we must free it.
         var result = SetWindowRgn(hwnd, region, true);
         if (result == 0)
         {

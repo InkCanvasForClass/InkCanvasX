@@ -42,7 +42,7 @@ public partial class MainWindow : Window
 
         if (e.Key is Key.F5)
         {
-            _viewModel.TogglePresentationModeCommand.Execute(null);
+            _viewModel.TogglePresentationModeCommand.Execute(this);
             e.Handled = true;
         }
     }
