@@ -26,6 +26,12 @@ public partial class App : Application
         AppLogger.Info($"后台联动已启动，日志目录：{AppLogger.CurrentLogDirectory}");
     }
 
+    protected override void OnSessionEnding(SessionEndingCancelEventArgs e)
+    {
+        Shutdown();
+        base.OnSessionEnding(e);
+    }
+
     protected override void OnExit(ExitEventArgs e)
     {
         _backgroundViewModel?.Dispose();

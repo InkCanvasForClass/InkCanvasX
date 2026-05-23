@@ -1,0 +1,27 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  windows-debug-x64:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+          dotnet-quality: ga
+
+      - name: Restore
+        run: dotnet restore InkCanvasX.sln -r win-x64
+
+      - name: Build
+        run: dotnet build InkCanvasX.sln --configuration Debug --no-restore -p:Platform=x64 -r win-x64

@@ -1,16 +1,48 @@
 <Window x:Class="SkiaAnnotate.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:pages="clr-namespace:SkiaAnnotate.Pages"
-        mc:Ignorable="d"
-        Title="SkiaAnnotate - PPT 批注"
-        Height="900"
-        Width="1440"
-        MinWidth="1000"
-        MinHeight="700">
-    <Grid>
-        <pages:AnnotatePage />
+        Title="InkCanvasX - PPT 批注"
+        Height="420"
+        Width="640"
+        MinWidth="560"
+        MinHeight="360">
+    <Grid Background="#F3F5F8">
+        <Border Width="520"
+                Padding="24"
+                CornerRadius="10"
+                Background="White"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+            <StackPanel>
+                <TextBlock FontSize="24"
+                           FontWeight="SemiBold"
+                           Text="PPT 联动批注模式" />
+                <TextBlock Margin="0,8,0,20"
+                           Foreground="#666"
+                           TextWrapping="Wrap"
+                           Text="先在 PowerPoint 中打开 PPT，再点击“连接 PowerPoint”；放映开始后会自动出现 Jalium.UI InkCanvas 浮动批注画布。" />
+
+                <WrapPanel>
+                    <Button Margin="0,0,12,0"
+                            Padding="16,8"
+                            Content="连接 PowerPoint"
+                            Command="{Binding ConnectPowerPointCommand}" />
+                    <Button Padding="16,8"
+                            Content="{Binding LinkButtonText}"
+                            Command="{Binding TogglePresentationModeCommand}" />
+                </WrapPanel>
+
+                <TextBlock Margin="0,18,0,0"
+                           Text="{Binding SlideDisplayText, StringFormat=已加载页数：{0}}" />
+                <TextBlock Margin="0,6,0,0"
+                           Foreground="#666"
+                           TextWrapping="Wrap"
+                           Text="{Binding StatusMessage}" />
+                <TextBlock Margin="0,20,0,0"
+                           Foreground="#666"
+                           TextWrapping="Wrap"
+                           Text="提示：联动中可用浮动栏翻页、画笔/橡皮、清屏，停止放映后画布会自动隐藏。" />
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>

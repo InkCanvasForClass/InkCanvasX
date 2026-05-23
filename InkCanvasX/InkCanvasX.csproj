@@ -2,20 +2,27 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <!-- Default packaging/publish config -->
-    <Configuration>Release</Configuration>
+    <Platforms>AnyCPU;x64;x86</Platforms>
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
     <PublishSingleFile Condition="'$(PublishSingleFile)' == ''">true</PublishSingleFile>
     <SelfContained Condition="'$(SelfContained)' == ''">false</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Controls\SkiaInkCanvas.cs" />
+    <Page Remove="Pages\AnnotatePage.xaml" />
+    <Compile Remove="Pages\AnnotatePage.xaml.cs" />
+    <Page Remove="MainWindow.xaml" />
+    <Compile Remove="MainWindow.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jalium.UI.Desktop" Version="26.10.3" />
     <PackageReference Include="Microsoft.Office.Interop.PowerPoint" Version="15.0.4420.1018" />
-    <PackageReference Include="SkiaSharp.Views.WPF" Version="3.119.2" />
   </ItemGroup>
 
 </Project>
