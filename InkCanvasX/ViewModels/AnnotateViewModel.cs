@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Threading;
+using Jalium.UI.Threading;
 using SkiaAnnotate.Commands;
 using SkiaAnnotate.Services;
 

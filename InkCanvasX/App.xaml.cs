@@ -1,19 +1,14 @@
 using System;
-using System.Windows;
+using Jalium.UI;
+using Jalium.UI.Controls;
 using SkiaAnnotate.Services;
 using SkiaAnnotate.ViewModels;
 
 namespace SkiaAnnotate;
 
-public partial class App : Application
+public sealed class App : Application
 {
     private AnnotateViewModel? _backgroundViewModel;
-
-    static App()
-    {
-        // Use the modern Pointer pipeline for stylus input to improve WPF ink stability/smoothing.
-        AppContext.SetSwitch("Switch.System.Windows.Input.Stylus.EnablePointerSupport", true);
-    }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -40,15 +35,8 @@ public partial class App : Application
         base.OnExit(e);
     }
 
-    private void RegisterGlobalExceptionHandlers()
+    private static void RegisterGlobalExceptionHandlers()
     {
-        DispatcherUnhandledException += (_, args) =>
-        {
-            AppLogger.Error("UI 线程未处理异常。", args.Exception);
-            // Prevent crash for recoverable errors (COM busy etc.)
-            args.Handled = true;
-        };
-
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
         {
             if (args.ExceptionObject is Exception ex)
@@ -62,4 +50,3 @@ public partial class App : Application
         };
     }
 }
-

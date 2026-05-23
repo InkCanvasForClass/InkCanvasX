@@ -1,7 +1,7 @@
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Ink;
-using System.Windows.Threading;
+using System.Runtime.InteropServices;
+using Jalium.UI;
+using Jalium.UI.Controls.Ink;
+using Jalium.UI.Threading;
 using SkiaAnnotate.Windows;
 
 namespace SkiaAnnotate.Services;
@@ -103,7 +103,6 @@ public sealed class PresentationModeService
         _overlayWindow = overlayWindow;
         overlayWindow.Show();
         overlayWindow.Activate();
-        Keyboard.Focus(overlayWindow);
         _activeSlideNumber = currentSlideNumber;
         _isSlideContentInitialized = false;
         SyncStrokesForSlide(currentSlideNumber);
@@ -111,11 +110,24 @@ public sealed class PresentationModeService
 
     private static Rect GetFullscreenCanvasBounds()
     {
+        return GetSystemMetricsBounds();
+    }
+
+    [DllImport("user32.dll")]
+    private static extern int GetSystemMetrics(int nIndex);
+
+    private static Rect GetSystemMetricsBounds()
+    {
+        const int smXVirtualScreen = 76;
+        const int smYVirtualScreen = 77;
+        const int smCxVirtualScreen = 78;
+        const int smCyVirtualScreen = 79;
+
         return new Rect(
-            SystemParameters.VirtualScreenLeft,
-            SystemParameters.VirtualScreenTop,
-            SystemParameters.VirtualScreenWidth,
-            SystemParameters.VirtualScreenHeight);
+            GetSystemMetrics(smXVirtualScreen),
+            GetSystemMetrics(smYVirtualScreen),
+            GetSystemMetrics(smCxVirtualScreen),
+            GetSystemMetrics(smCyVirtualScreen));
     }
 
     private void SyncStrokesForSlide(int currentSlideNumber)
@@ -174,7 +186,6 @@ public sealed class PresentationModeService
 
     private void ScheduleSlideSync(PptInteropService pptInteropService)
     {
-        // First sync immediately, then retry a few short ticks to catch transition lag.
         var currentSlideNumber = pptInteropService.GetCurrentSlideNumberInShow();
         SyncStrokesForSlide(currentSlideNumber);
 

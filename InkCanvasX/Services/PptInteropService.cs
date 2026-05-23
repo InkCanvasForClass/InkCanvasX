@@ -1,8 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Windows;
-using System.Windows.Media.Imaging;
+using Jalium.UI;
 
 namespace SkiaAnnotate.Services;
 
@@ -23,6 +22,12 @@ public sealed class PptInteropService : IDisposable
     private static extern void GetActiveObject(ref Guid rclsid, IntPtr reserved, [MarshalAs(UnmanagedType.IUnknown)] out object ppunk);
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+    [DllImport("user32.dll")]
+    private static extern int GetSystemMetrics(int nIndex);
+
+    private const int smCxScreen = 0;
+    private const int smCyScreen = 1;
 
     private dynamic? _application;
     private dynamic? _presentation;
@@ -89,47 +94,6 @@ public sealed class PptInteropService : IDisposable
     {
         EnsurePresentation();
         return (int)_presentation!.Slides.Count;
-    }
-
-    public BitmapImage RenderSlideToImage(int slideIndex, int width = 1600, int height = 900)
-    {
-        EnsurePresentation();
-        var presentation = _presentation!;
-
-        if (slideIndex < 1 || slideIndex > presentation.Slides.Count)
-        {
-            throw new ArgumentOutOfRangeException(nameof(slideIndex), "幻灯片索引超出范围。");
-        }
-
-        var tempFile = Path.Combine(Path.GetTempPath(), $"SkiaAnnotate_{Guid.NewGuid():N}.png");
-        dynamic? slide = null;
-
-        try
-        {
-            slide = presentation.Slides[slideIndex];
-            slide.Export(tempFile, "PNG", width, height);
-
-            var image = new BitmapImage();
-            using var stream = File.OpenRead(tempFile);
-            image.BeginInit();
-            image.CacheOption = BitmapCacheOption.OnLoad;
-            image.StreamSource = stream;
-            image.EndInit();
-            image.Freeze();
-            return image;
-        }
-        finally
-        {
-            if (slide is not null)
-            {
-                Marshal.FinalReleaseComObject(slide);
-            }
-
-            if (File.Exists(tempFile))
-            {
-                File.Delete(tempFile);
-            }
-        }
     }
 
     public bool TryRefreshActivePresentation()
@@ -244,7 +208,7 @@ public sealed class PptInteropService : IDisposable
         var slideShowWindow = GetSlideShowWindowOrNull();
         if (slideShowWindow is null)
         {
-            return new Rect(0, 0, SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
+            return new Rect(0, 0, GetSystemMetrics(smCxScreen), GetSystemMetrics(smCyScreen));
         }
 
         try

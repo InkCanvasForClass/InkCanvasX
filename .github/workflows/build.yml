@@ -21,7 +21,7 @@ jobs:
           dotnet-quality: ga
 
       - name: Restore
-        run: dotnet restore InkCanvasX.sln -r win-x64
+        run: dotnet restore InkCanvasX.sln
 
       - name: Build
-        run: dotnet build InkCanvasX.sln --configuration Debug --no-restore -p:Platform=x64 -r win-x64
+        run: dotnet build InkCanvasX.sln --configuration Debug --no-restore -p:Platform=x64

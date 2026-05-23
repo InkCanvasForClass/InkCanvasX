@@ -455,3 +455,8 @@ FodyWeavers.xsd
 telemetry_dsn.txt
 **/telemetry_dsn.txt
 /.claude
+/.tmp-jalium-controls
+/.tmp-jalium-core
+*.zip
+/.tmp-jalium-media
+/.tmp-jalium-input
