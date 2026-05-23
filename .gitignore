@@ -1,0 +1,5 @@
+bin/
+obj/
+artifacts/
+*.user
+/src/LanStartWrite.Inkcanvas/bin
