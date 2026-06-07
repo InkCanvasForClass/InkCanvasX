@@ -1,4 +1,4 @@
-# Project Memory - LanStartWrite.Inkcanvas
+# Project Memory - Inkcanvas X
 
 ## Critical: This is a Jalium.UI project
 

@@ -1,8 +1,9 @@
+using FluentJalium.Controls.Themes;
 using Jalium.UI;
 using Jalium.UI.Controls;
 using Jalium.UI.Interop;
 
-namespace LanStartWrite.Inkcanvas;
+namespace InkCanvasX;
 
 internal static class Program
 {
@@ -20,6 +21,8 @@ internal static class Program
         InkCanvasTuning.ApplyStartupDefaults();
 
         var app = new Application();
+        FluentThemeManager.Apply(app, new FluentThemeOptions { Theme = FluentThemeVariant.Light });
+
         var window = new AnnotationToolbarWindow();
         app.MainWindow = window;
 

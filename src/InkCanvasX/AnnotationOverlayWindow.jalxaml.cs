@@ -8,7 +8,7 @@ using Jalium.UI.Input;
 using Jalium.UI.Media;
 using Jalium.UI.Threading;
 
-namespace LanStartWrite.Inkcanvas;
+namespace InkCanvasX;
 
 public partial class AnnotationOverlayWindow : Window
 {

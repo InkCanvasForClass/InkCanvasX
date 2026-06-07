@@ -1,6 +1,6 @@
 <Window xmlns="http://schemas.jalium.ui/2024"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="LanStartWrite.Inkcanvas.AnnotationOverlayWindow"
+        x:Class="InkCanvasX.AnnotationOverlayWindow"
         Title=""
         WindowState="Maximized"
         WindowStartupLocation="Manual"

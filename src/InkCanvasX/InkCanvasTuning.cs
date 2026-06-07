@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Reflection;
 using Jalium.UI.Controls;
 
-namespace LanStartWrite.Inkcanvas;
+namespace InkCanvasX;
 
 /// <summary>
 /// 通过反射调整 <see cref="InkCanvas"/> 内部采样阈值（文档中为 <c>MinPointDistance</c> 字段），

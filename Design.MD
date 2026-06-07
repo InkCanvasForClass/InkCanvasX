@@ -1,4 +1,4 @@
-# LanStartWrite 设计基线（Jalium.UI + Win11 Fluent）
+# Inkcanvas X 设计基线（Jalium.UI + Win11 Fluent）
 
 本文件用于约束项目 UI 设计与实现，避免设置页、批注栏出现风格漂移和结构不稳定。
 

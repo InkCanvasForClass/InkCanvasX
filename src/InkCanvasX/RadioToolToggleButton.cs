@@ -2,7 +2,7 @@ using Jalium.UI;
 using Jalium.UI.Controls;
 using Jalium.UI.Controls.Primitives;
 
-namespace LanStartWrite.Inkcanvas;
+namespace InkCanvasX;
 
 /// <summary>
 /// 具备 Radio 语义：<see cref="ToggleButton"/> 在已选中时再次点击不会取消选中，

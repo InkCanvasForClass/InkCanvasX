@@ -1,4 +1,4 @@
-namespace LanStartWrite.Inkcanvas;
+namespace InkCanvasX;
 
 internal enum SettingsNavPage
 {

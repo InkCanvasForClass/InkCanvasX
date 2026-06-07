@@ -3,7 +3,7 @@ using Jalium.UI.Controls;
 using Jalium.UI.Input;
 using Jalium.UI.Media;
 
-namespace LanStartWrite.Inkcanvas;
+namespace InkCanvasX;
 
 public partial class AnnotationToolbarWindow : Window
 {
