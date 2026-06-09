@@ -124,10 +124,32 @@ public partial class PenSecondaryMenuWindow : Window
         {
             var ring = _colorRings[i];
             var index = i;
+
+            // 点击选择
             ring.PreviewPointerDown += (_, e) =>
             {
                 e.Handled = true;
                 SelectPaletteIndex(index);
+            };
+
+            // 鼠标悬停效果 - 使用 MouseEnter/MouseLeave
+            ring.MouseEnter += (_, _) =>
+            {
+                if (index != _selectedPaletteIndex)
+                {
+                    ring.Background = new SolidColorBrush(Color.FromArgb(0x15, 0x00, 0x78, 0xD4));
+                    ring.BorderBrush = new SolidColorBrush(Color.FromArgb(0x60, 0x00, 0x78, 0xD4));
+                    ring.BorderThickness = new Thickness(2.5);
+                }
+            };
+
+            ring.MouseLeave += (_, _) =>
+            {
+                if (index != _selectedPaletteIndex)
+                {
+                    ring.Background = Brushes.Transparent;
+                    ring.BorderBrush = new SolidColorBrush(Colors.Transparent);
+                }
             };
         }
     }
@@ -180,13 +202,25 @@ public partial class PenSecondaryMenuWindow : Window
             var ring = _colorRings[i];
             if (i == _selectedPaletteIndex)
             {
-                ring.BorderBrush = new SolidColorBrush(SelectionRingColor);
-                ring.BorderThickness = new Thickness(2);
+                // 选中状态：蓝色渐变边框 + 发光效果
+                var gradientBrush = new LinearGradientBrush
+                {
+                    StartPoint = new Point(0, 0),
+                    EndPoint = new Point(1, 1)
+                };
+                gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0x00, 0x78, 0xD4), 0));
+                gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0x00, 0xB7, 0xC3), 1));
+
+                ring.BorderBrush = gradientBrush;
+                ring.BorderThickness = new Thickness(3);
+                ring.Background = new SolidColorBrush(Color.FromArgb(0x20, 0x00, 0x78, 0xD4));
             }
             else
             {
+                // 未选中状态：透明边框，鼠标悬停时高亮
                 ring.BorderBrush = new SolidColorBrush(Colors.Transparent);
-                ring.BorderThickness = new Thickness(2);
+                ring.BorderThickness = new Thickness(2.5);
+                ring.Background = Brushes.Transparent;
             }
         }
     }

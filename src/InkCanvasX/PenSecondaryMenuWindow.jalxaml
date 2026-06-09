@@ -15,128 +15,270 @@
         IsShowCloseButton="False"
         HasSystemMenu="False"
         AllowsTransparency="True"
-        SystemBackdrop="None"
+        SystemBackdrop="Acrylic"
         Background="Transparent"
         Foreground="#242424"
         Opacity="1">
     <Grid Background="Transparent">
-        <Border Margin="3"
-                CornerRadius="10"
-                Background="#FFFFFF"
-                BorderBrush="#E8E8E8"
-                BorderThickness="1"
-                Padding="8"
-                Foreground="#242424">
-            <Grid Foreground="#242424">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="7" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+        <!-- 外层阴影容器 -->
+        <Border Margin="8"
+                CornerRadius="16"
+                Background="Transparent">
+            <Border.Effect>
+                <DropShadowEffect Color="#40000000"
+                                  BlurRadius="24"
+                                  ShadowDepth="4"
+                                  Direction="270"
+                                  Opacity="0.5" />
+            </Border.Effect>
 
-                <!-- 左侧：9 色 + 粗细。保证可点面积，同时尽量贴边。 -->
-                <StackPanel Grid.Column="0"
-                            Orientation="Vertical"
-                            HorizontalAlignment="Left">
-                    <Grid Width="92" Height="92" HorizontalAlignment="Left">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="26" />
-                            <RowDefinition Height="7" />
-                            <RowDefinition Height="26" />
-                            <RowDefinition Height="7" />
-                            <RowDefinition Height="26" />
-                        </Grid.RowDefinitions>
+            <!-- Acrylic 毛玻璃背景层 -->
+            <Border CornerRadius="16"
+                    Background="#F2FFFFFF"
+                    BorderBrush="#30000000"
+                    BorderThickness="1"
+                    ClipToBounds="True">
+                <Border.Effect>
+                    <BlurEffect Radius="40" />
+                </Border.Effect>
+
+                <!-- 内容层 -->
+                <Border CornerRadius="16"
+                        Background="#F5FFFFFF"
+                        BorderBrush="#20FFFFFF"
+                        BorderThickness="1"
+                        Padding="20,16,20,16"
+                        ClipToBounds="True">
+                    <Grid Foreground="#242424">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="26" />
-                            <ColumnDefinition Width="7" />
-                            <ColumnDefinition Width="26" />
-                            <ColumnDefinition Width="7" />
-                            <ColumnDefinition Width="26" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <Border x:Name="PenColorRing1" Grid.Row="0" Grid.Column="0" Width="26" Height="26" Padding="2" Background="Transparent" BorderBrush="Transparent" BorderThickness="2" CornerRadius="13">
-                            <Border Background="#202020" CornerRadius="10" Width="20" Height="20" />
-                        </Border>
-                        <Border x:Name="PenColorRing2" Grid.Row="0" Grid.Column="2" Width="26" Height="26" Padding="2" Background="Transparent" BorderBrush="Transparent" BorderThickness="2" CornerRadius="13">
-                            <Border Background="#D13438" CornerRadius="10" Width="20" Height="20" />
-                        </Border>
-                        <Border x:Name="PenColorRing3" Grid.Row="0" Grid.Column="4" Width="26" Height="26" Padding="2" Background="Transparent" BorderBrush="Transparent" BorderThickness="2" CornerRadius="13">
-                            <Border Background="#F26B1F" CornerRadius="10" Width="20" Height="20" />
-                        </Border>
+                        <!-- 左侧：颜色选择器 + 粗细滑块 -->
+                        <StackPanel Grid.Column="0"
+                                    Orientation="Vertical"
+                                    HorizontalAlignment="Left">
+                            <!-- 颜色标题 -->
+                            <TextBlock Text="颜色"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="#404040"
+                                       Margin="0,0,0,10" />
 
-                        <Border x:Name="PenColorRing4" Grid.Row="2" Grid.Column="0" Width="26" Height="26" Padding="2" Background="Transparent" BorderBrush="Transparent" BorderThickness="2" CornerRadius="13">
-                            <Border Background="#F2C811" CornerRadius="10" Width="20" Height="20" />
-                        </Border>
-                        <Border x:Name="PenColorRing5" Grid.Row="2" Grid.Column="2" Width="26" Height="26" Padding="2" Background="Transparent" BorderBrush="Transparent" BorderThickness="2" CornerRadius="13">
-                            <Border Background="#107C10" CornerRadius="10" Width="20" Height="20" />
-                        </Border>
-                        <Border x:Name="PenColorRing6" Grid.Row="2" Grid.Column="4" Width="26" Height="26" Padding="2" Background="Transparent" BorderBrush="Transparent" BorderThickness="2" CornerRadius="13">
-                            <Border Background="#00B7C3" CornerRadius="10" Width="20" Height="20" />
-                        </Border>
+                            <!-- 颜色网格 - 更大的色块 -->
+                            <Grid Width="150" Height="150" HorizontalAlignment="Left">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="42" />
+                                    <RowDefinition Height="12" />
+                                    <RowDefinition Height="42" />
+                                    <RowDefinition Height="12" />
+                                    <RowDefinition Height="42" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="42" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="42" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="42" />
+                                </Grid.ColumnDefinitions>
 
-                        <Border x:Name="PenColorRing7" Grid.Row="4" Grid.Column="0" Width="26" Height="26" Padding="2" Background="Transparent" BorderBrush="Transparent" BorderThickness="2" CornerRadius="13">
-                            <Border Background="#0078D4" CornerRadius="10" Width="20" Height="20" />
-                        </Border>
-                        <Border x:Name="PenColorRing8" Grid.Row="4" Grid.Column="2" Width="26" Height="26" Padding="2" Background="Transparent" BorderBrush="Transparent" BorderThickness="2" CornerRadius="13">
-                            <Border Background="#8764B8" CornerRadius="10" Width="20" Height="20" />
-                        </Border>
-                        <Border x:Name="PenColorRing9" Grid.Row="4" Grid.Column="4" Width="26" Height="26" Padding="2" Background="Transparent" BorderBrush="Transparent" BorderThickness="2" CornerRadius="13">
-                            <Border Background="#737373" CornerRadius="10" Width="20" Height="20" />
-                        </Border>
+                                <!-- 第一行 -->
+                                <Border x:Name="PenColorRing1" Grid.Row="0" Grid.Column="0"
+                                        Width="42" Height="42" Padding="3"
+                                        Background="Transparent" BorderBrush="Transparent"
+                                        BorderThickness="2.5" CornerRadius="21"
+                                        Cursor="Hand">
+                                    <Border Background="#202020" CornerRadius="16"
+                                            Width="34" Height="34">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#202020" BlurRadius="8"
+                                                              ShadowDepth="0" Opacity="0.4" />
+                                        </Border.Effect>
+                                    </Border>
+                                </Border>
+                                <Border x:Name="PenColorRing2" Grid.Row="0" Grid.Column="2"
+                                        Width="42" Height="42" Padding="3"
+                                        Background="Transparent" BorderBrush="Transparent"
+                                        BorderThickness="2.5" CornerRadius="21"
+                                        Cursor="Hand">
+                                    <Border Background="#D13438" CornerRadius="16"
+                                            Width="34" Height="34">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#D13438" BlurRadius="8"
+                                                              ShadowDepth="0" Opacity="0.4" />
+                                        </Border.Effect>
+                                    </Border>
+                                </Border>
+                                <Border x:Name="PenColorRing3" Grid.Row="0" Grid.Column="4"
+                                        Width="42" Height="42" Padding="3"
+                                        Background="Transparent" BorderBrush="Transparent"
+                                        BorderThickness="2.5" CornerRadius="21"
+                                        Cursor="Hand">
+                                    <Border Background="#F26B1F" CornerRadius="16"
+                                            Width="34" Height="34">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#F26B1F" BlurRadius="8"
+                                                              ShadowDepth="0" Opacity="0.4" />
+                                        </Border.Effect>
+                                    </Border>
+                                </Border>
+
+                                <!-- 第二行 -->
+                                <Border x:Name="PenColorRing4" Grid.Row="2" Grid.Column="0"
+                                        Width="42" Height="42" Padding="3"
+                                        Background="Transparent" BorderBrush="Transparent"
+                                        BorderThickness="2.5" CornerRadius="21"
+                                        Cursor="Hand">
+                                    <Border Background="#F2C811" CornerRadius="16"
+                                            Width="34" Height="34">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#F2C811" BlurRadius="8"
+                                                              ShadowDepth="0" Opacity="0.4" />
+                                        </Border.Effect>
+                                    </Border>
+                                </Border>
+                                <Border x:Name="PenColorRing5" Grid.Row="2" Grid.Column="2"
+                                        Width="42" Height="42" Padding="3"
+                                        Background="Transparent" BorderBrush="Transparent"
+                                        BorderThickness="2.5" CornerRadius="21"
+                                        Cursor="Hand">
+                                    <Border Background="#107C10" CornerRadius="16"
+                                            Width="34" Height="34">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#107C10" BlurRadius="8"
+                                                              ShadowDepth="0" Opacity="0.4" />
+                                        </Border.Effect>
+                                    </Border>
+                                </Border>
+                                <Border x:Name="PenColorRing6" Grid.Row="2" Grid.Column="4"
+                                        Width="42" Height="42" Padding="3"
+                                        Background="Transparent" BorderBrush="Transparent"
+                                        BorderThickness="2.5" CornerRadius="21"
+                                        Cursor="Hand">
+                                    <Border Background="#00B7C3" CornerRadius="16"
+                                            Width="34" Height="34">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#00B7C3" BlurRadius="8"
+                                                              ShadowDepth="0" Opacity="0.4" />
+                                        </Border.Effect>
+                                    </Border>
+                                </Border>
+
+                                <!-- 第三行 -->
+                                <Border x:Name="PenColorRing7" Grid.Row="4" Grid.Column="0"
+                                        Width="42" Height="42" Padding="3"
+                                        Background="Transparent" BorderBrush="Transparent"
+                                        BorderThickness="2.5" CornerRadius="21"
+                                        Cursor="Hand">
+                                    <Border Background="#0078D4" CornerRadius="16"
+                                            Width="34" Height="34">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#0078D4" BlurRadius="8"
+                                                              ShadowDepth="0" Opacity="0.4" />
+                                        </Border.Effect>
+                                    </Border>
+                                </Border>
+                                <Border x:Name="PenColorRing8" Grid.Row="4" Grid.Column="2"
+                                        Width="42" Height="42" Padding="3"
+                                        Background="Transparent" BorderBrush="Transparent"
+                                        BorderThickness="2.5" CornerRadius="21"
+                                        Cursor="Hand">
+                                    <Border Background="#8764B8" CornerRadius="16"
+                                            Width="34" Height="34">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#8764B8" BlurRadius="8"
+                                                              ShadowDepth="0" Opacity="0.4" />
+                                        </Border.Effect>
+                                    </Border>
+                                </Border>
+                                <Border x:Name="PenColorRing9" Grid.Row="4" Grid.Column="4"
+                                        Width="42" Height="42" Padding="3"
+                                        Background="Transparent" BorderBrush="Transparent"
+                                        BorderThickness="2.5" CornerRadius="21"
+                                        Cursor="Hand">
+                                    <Border Background="#737373" CornerRadius="16"
+                                            Width="34" Height="34">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#737373" BlurRadius="8"
+                                                              ShadowDepth="0" Opacity="0.4" />
+                                        </Border.Effect>
+                                    </Border>
+                                </Border>
+                            </Grid>
+
+                            <!-- 粗细控制 -->
+                            <TextBlock x:Name="PenThicknessValueText"
+                                       Text="粗细: 4 px"
+                                       Margin="0,16,0,0"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="#404040" />
+                            <Slider x:Name="PenThicknessSlider"
+                                    Margin="0,8,0,0"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Minimum="1"
+                                    Maximum="24"
+                                    Value="4"
+                                    TickFrequency="1"
+                                    IsSnapToTickEnabled="True"
+                                    ValueChanged="PenThicknessSlider_OnValueChanged" />
+                        </StackPanel>
+
+                        <!-- 分隔线 -->
+                        <Border Grid.Column="1"
+                                Width="1"
+                                Background="#E0E0E0"
+                                Margin="0,8" />
+
+                        <!-- 右侧：笔类型选择 -->
+                        <StackPanel Grid.Column="2"
+                                    Orientation="Vertical"
+                                    VerticalAlignment="Top"
+                                    HorizontalAlignment="Left"
+                                    Foreground="#242424">
+                            <TextBlock Text="笔类型"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="#404040"
+                                       Margin="0,0,0,10" />
+
+                            <RadioButton x:Name="PenKindPenRadio"
+                                         GroupName="PenKind"
+                                         Margin="0,0,0,8"
+                                         Padding="10,8"
+                                         HorizontalAlignment="Stretch"
+                                         MinWidth="100"
+                                         Foreground="#242424"
+                                         FontSize="13">
+                                <TextBlock Text="书写笔" Foreground="#242424" FontSize="13" />
+                            </RadioButton>
+                            <RadioButton x:Name="PenKindHighlighterRadio"
+                                         GroupName="PenKind"
+                                         Margin="0,0,0,8"
+                                         Padding="10,8"
+                                         HorizontalAlignment="Stretch"
+                                         MinWidth="100"
+                                         Foreground="#242424"
+                                         FontSize="13">
+                                <TextBlock Text="荧光笔" Foreground="#242424" FontSize="13" />
+                            </RadioButton>
+                            <RadioButton x:Name="PenKindLaserRadio"
+                                         GroupName="PenKind"
+                                         Margin="0,0,0,0"
+                                         Padding="10,8"
+                                         HorizontalAlignment="Stretch"
+                                         MinWidth="100"
+                                         Foreground="#242424"
+                                         FontSize="13">
+                                <TextBlock Text="激光笔" Foreground="#242424" FontSize="13" />
+                            </RadioButton>
+                        </StackPanel>
                     </Grid>
-
-                    <TextBlock x:Name="PenThicknessValueText"
-                               Text="粗细: 4 px"
-                               Margin="0,6,0,0"
-                               FontSize="12"
-                               Foreground="#5A5A5A" />
-                    <Slider x:Name="PenThicknessSlider"
-                            Margin="0,3,0,0"
-                            Width="92"
-                            HorizontalAlignment="Left"
-                            Minimum="1"
-                            Maximum="24"
-                            Value="4"
-                            TickFrequency="1"
-                            IsSnapToTickEnabled="True"
-                            ValueChanged="PenThicknessSlider_OnValueChanged" />
-                </StackPanel>
-
-                <!-- 右侧：笔类型。保持可读和可点，不再压缩到难用。 -->
-                <StackPanel Grid.Column="2"
-                            Orientation="Vertical"
-                            VerticalAlignment="Top"
-                            HorizontalAlignment="Left"
-                            Foreground="#242424">
-                    <RadioButton x:Name="PenKindPenRadio"
-                                 GroupName="PenKind"
-                                 Margin="0,0,0,3"
-                                 Padding="6,3"
-                                 HorizontalAlignment="Left"
-                                 Foreground="#242424"
-                                 FontSize="12">
-                        <TextBlock Text="书写笔" Foreground="#242424" FontSize="12" />
-                    </RadioButton>
-                    <RadioButton x:Name="PenKindHighlighterRadio"
-                                 GroupName="PenKind"
-                                 Margin="0,0,0,3"
-                                 Padding="6,3"
-                                 HorizontalAlignment="Left"
-                                 Foreground="#242424"
-                                 FontSize="12">
-                        <TextBlock Text="荧光笔" Foreground="#242424" FontSize="12" />
-                    </RadioButton>
-                    <RadioButton x:Name="PenKindLaserRadio"
-                                 GroupName="PenKind"
-                                 Margin="0,0,0,0"
-                                 Padding="6,3"
-                                 HorizontalAlignment="Left"
-                                 Foreground="#242424"
-                                 FontSize="12">
-                        <TextBlock Text="激光笔" Foreground="#242424" FontSize="12" />
-                    </RadioButton>
-                </StackPanel>
-            </Grid>
+                </Border>
+            </Border>
         </Border>
     </Grid>
 </Window>
